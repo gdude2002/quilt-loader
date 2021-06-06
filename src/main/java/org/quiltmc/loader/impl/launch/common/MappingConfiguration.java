@@ -20,14 +20,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
+import net.fabricmc.mapping.tree.TinyMappingFactory;
+import net.fabricmc.mapping.tree.TinyTree;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.fabricmc.mapping.tree.TinyMappingFactory;
-import net.fabricmc.mapping.tree.TinyTree;
-
 public class MappingConfiguration {
+
 	protected static Logger LOGGER = LogManager.getFormatterLogger("QuiltLoader");
 
 	private static TinyTree mappings;
@@ -35,7 +34,8 @@ public class MappingConfiguration {
 
 	public TinyTree getMappings() {
 		if (!checkedMappings) {
-			InputStream mappingStream = QuiltLauncherBase.class.getClassLoader().getResourceAsStream("mappings/mappings.tiny");
+			InputStream mappingStream =
+				QuiltLauncherBase.class.getClassLoader().getResourceAsStream("mappings/mappings.tiny");
 
 			if (mappingStream != null) {
 				try (BufferedReader reader = new BufferedReader(new InputStreamReader(mappingStream))) {

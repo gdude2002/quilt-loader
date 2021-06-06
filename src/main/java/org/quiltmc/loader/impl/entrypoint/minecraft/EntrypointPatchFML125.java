@@ -16,18 +16,18 @@
 
 package org.quiltmc.loader.impl.entrypoint.minecraft;
 
+import java.io.IOException;
+import java.util.function.Consumer;
+import org.objectweb.asm.commons.ClassRemapper;
+import org.objectweb.asm.commons.Remapper;
+import org.objectweb.asm.tree.ClassNode;
 import org.quiltmc.loader.impl.entrypoint.EntrypointPatch;
 import org.quiltmc.loader.impl.entrypoint.EntrypointTransformer;
 import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
 import org.quiltmc.loader.impl.launch.knot.Knot;
-import org.objectweb.asm.commons.ClassRemapper;
-import org.objectweb.asm.commons.Remapper;
-import org.objectweb.asm.tree.ClassNode;
-
-import java.io.IOException;
-import java.util.function.Consumer;
 
 public class EntrypointPatchFML125 extends EntrypointPatch {
+
 	private static final String FROM = "org.quiltmc.loader.impl.entrypoint.minecraft.ModClassLoader_125_FML";
 	private static final String TO = "cpw.mods.fml.common.ModClassLoader";
 	private static final String FROM_INTERNAL = "org/quiltmc/loader/impl/entrypoint/minecraft/ModClassLoader_125_FML";
@@ -39,9 +39,7 @@ public class EntrypointPatchFML125 extends EntrypointPatch {
 
 	@Override
 	public void process(QuiltLauncher launcher, Consumer<ClassNode> classEmitter) {
-		if (classExists(launcher, TO)
-			&& !classExists(launcher, "cpw.mods.fml.relauncher.FMLRelauncher")) {
-
+		if (classExists(launcher, TO) && !classExists(launcher, "cpw.mods.fml.relauncher.FMLRelauncher")) {
 			if (!(launcher instanceof Knot)) {
 				throw new RuntimeException("1.2.5 FML patch only supported on Knot!");
 			}
@@ -51,12 +49,17 @@ public class EntrypointPatchFML125 extends EntrypointPatch {
 				ClassNode patchedClassLoader = loadClass(launcher, FROM);
 				ClassNode remappedClassLoader = new ClassNode();
 
-				patchedClassLoader.accept(new ClassRemapper(remappedClassLoader, new Remapper() {
-					@Override
-					public String map(String internalName) {
-						return FROM_INTERNAL.equals(internalName) ? TO_INTERNAL : internalName;
-					}
-				}));
+				patchedClassLoader.accept(
+					new ClassRemapper(
+						remappedClassLoader,
+						new Remapper() {
+							@Override
+							public String map(String internalName) {
+								return FROM_INTERNAL.equals(internalName) ? TO_INTERNAL : internalName;
+							}
+						}
+					)
+				);
 
 				classEmitter.accept(remappedClassLoader);
 			} catch (IOException e) {

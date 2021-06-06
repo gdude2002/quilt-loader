@@ -16,9 +16,6 @@
 
 package org.quiltmc.loader.impl.entrypoint.applet;
 
-import org.quiltmc.loader.impl.entrypoint.EntrypointTransformer;
-import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
-
 import java.applet.Applet;
 import java.applet.AppletStub;
 import java.awt.BorderLayout;
@@ -29,6 +26,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.quiltmc.loader.impl.entrypoint.EntrypointTransformer;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
 
 /**
  * PLEASE NOTE:
@@ -40,13 +39,23 @@ import java.util.Map;
  */
 @SuppressWarnings("serial")
 public class AppletLauncher extends Applet implements AppletStub {
+
 	public static File gameDir;
 
 	private final Map<String, String> params;
 	private Applet mcApplet;
 	private boolean active;
 
-	public AppletLauncher(File instance, String username, String sessionid, String host, String port, boolean doConnect, boolean fullscreen, boolean demo) {
+	public AppletLauncher(
+		File instance,
+		String username,
+		String sessionid,
+		String host,
+		String port,
+		boolean doConnect,
+		boolean fullscreen,
+		boolean demo
+	) {
 		gameDir = instance;
 
 		params = new HashMap<>();
@@ -61,15 +70,26 @@ public class AppletLauncher extends Applet implements AppletStub {
 		params.put("demo", Boolean.toString(demo));
 
 		try {
-			mcApplet = (Applet) QuiltLauncherBase.getLauncher().getTargetClassLoader().loadClass(EntrypointTransformer.appletMainClass)
-				.getDeclaredConstructor().newInstance();
+			mcApplet =
+				(Applet) QuiltLauncherBase
+					.getLauncher()
+					.getTargetClassLoader()
+					.loadClass(EntrypointTransformer.appletMainClass)
+					.getDeclaredConstructor()
+					.newInstance();
 			//noinspection ConstantConditions
 			if (mcApplet == null) {
 				throw new RuntimeException("Could not instantiate MinecraftApplet - is null?");
 			}
 
 			this.add(mcApplet, "Center");
-		} catch (InstantiationException | InvocationTargetException | IllegalAccessException | NoSuchMethodException | ClassNotFoundException e) {
+		} catch (
+			InstantiationException
+			| InvocationTargetException
+			| IllegalAccessException
+			| NoSuchMethodException
+			| ClassNotFoundException e
+		) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -123,7 +143,7 @@ public class AppletLauncher extends Applet implements AppletStub {
 	@Override
 	public void init() {
 		mcApplet.setStub(this);
-		mcApplet.setSize(getWidth(),getHeight());
+		mcApplet.setSize(getWidth(), getHeight());
 		this.setLayout(new BorderLayout());
 		this.add(mcApplet, "Center");
 		mcApplet.init();

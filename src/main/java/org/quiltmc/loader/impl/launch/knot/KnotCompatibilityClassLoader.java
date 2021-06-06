@@ -16,15 +16,15 @@
 
 package org.quiltmc.loader.impl.launch.knot;
 
-import net.fabricmc.api.EnvType;
-import org.quiltmc.loader.impl.game.GameProvider;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import net.fabricmc.api.EnvType;
+import org.quiltmc.loader.impl.game.GameProvider;
 
 class KnotCompatibilityClassLoader extends URLClassLoader implements KnotClassLoaderInterface {
+
 	private final KnotClassDelegate delegate;
 
 	KnotCompatibilityClassLoader(boolean isDevelopment, EnvType envType, GameProvider provider) {
@@ -52,7 +52,10 @@ class KnotCompatibilityClassLoader extends URLClassLoader implements KnotClassLo
 			if (c == null) {
 				byte[] input = delegate.getPostMixinClassByteArray(name);
 				if (input != null) {
-					KnotClassDelegate.Metadata metadata = delegate.getMetadata(name, getResource(delegate.getClassFileName(name)));
+					KnotClassDelegate.Metadata metadata = delegate.getMetadata(
+						name,
+						getResource(delegate.getClassFileName(name))
+					);
 
 					int pkgDelimiterPos = name.lastIndexOf('.');
 					if (pkgDelimiterPos > 0) {

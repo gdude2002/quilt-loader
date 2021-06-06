@@ -23,60 +23,60 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Map.Entry;
-
+import java.util.Objects;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import org.quiltmc.json5.JsonReader;
 
 abstract class CustomValueImpl implements CustomValue {
+
 	static final CustomValue BOOLEAN_TRUE = new BooleanImpl(true);
 	static final CustomValue BOOLEAN_FALSE = new BooleanImpl(false);
 	static final CustomValue NULL = new NullImpl();
 
 	public static CustomValue readCustomValue(JsonReader reader) throws IOException, ParseMetadataException {
 		switch (reader.peek()) {
-		case BEGIN_OBJECT:
-			reader.beginObject();
+			case BEGIN_OBJECT:
+				reader.beginObject();
 
-			// To preserve insertion order
-			final Map<String, CustomValue> values = new LinkedHashMap<>();
+				// To preserve insertion order
+				final Map<String, CustomValue> values = new LinkedHashMap<>();
 
-			while (reader.hasNext()) {
-				values.put(reader.nextName(), readCustomValue(reader));
-			}
+				while (reader.hasNext()) {
+					values.put(reader.nextName(), readCustomValue(reader));
+				}
 
-			reader.endObject();
+				reader.endObject();
 
-			return new ObjectImpl(values);
-		case BEGIN_ARRAY:
-			reader.beginArray();
+				return new ObjectImpl(values);
+			case BEGIN_ARRAY:
+				reader.beginArray();
 
-			final List<CustomValue> entries = new ArrayList<>();
+				final List<CustomValue> entries = new ArrayList<>();
 
-			while (reader.hasNext()) {
-				entries.add(readCustomValue(reader));
-			}
+				while (reader.hasNext()) {
+					entries.add(readCustomValue(reader));
+				}
 
-			reader.endArray();
+				reader.endArray();
 
-			return new ArrayImpl(entries);
-		case STRING:
-			return new StringImpl(reader.nextString());
-		case NUMBER:
-			// TODO: Parse this somewhat more smartly?
-			return new NumberImpl(reader.nextDouble());
-		case BOOLEAN:
-			if (reader.nextBoolean()) {
-				return BOOLEAN_TRUE;
-			}
+				return new ArrayImpl(entries);
+			case STRING:
+				return new StringImpl(reader.nextString());
+			case NUMBER:
+				// TODO: Parse this somewhat more smartly?
+				return new NumberImpl(reader.nextDouble());
+			case BOOLEAN:
+				if (reader.nextBoolean()) {
+					return BOOLEAN_TRUE;
+				}
 
-			return BOOLEAN_FALSE;
-		case NULL:
-			reader.nextNull();
-			return NULL;
-		default:
-			throw new ParseMetadataException(Objects.toString(reader.nextName()), reader);
+				return BOOLEAN_FALSE;
+			case NULL:
+				reader.nextNull();
+				return NULL;
+			default:
+				throw new ParseMetadataException(Objects.toString(reader.nextName()), reader);
 		}
 	}
 
@@ -85,7 +85,7 @@ abstract class CustomValueImpl implements CustomValue {
 		if (this instanceof ObjectImpl) {
 			return (ObjectImpl) this;
 		} else {
-			throw new ClassCastException("can't convert "+getType().name()+" to Object");
+			throw new ClassCastException("can't convert " + getType().name() + " to Object");
 		}
 	}
 
@@ -94,7 +94,7 @@ abstract class CustomValueImpl implements CustomValue {
 		if (this instanceof ArrayImpl) {
 			return (ArrayImpl) this;
 		} else {
-			throw new ClassCastException("can't convert "+getType().name()+" to Array");
+			throw new ClassCastException("can't convert " + getType().name() + " to Array");
 		}
 	}
 
@@ -103,7 +103,7 @@ abstract class CustomValueImpl implements CustomValue {
 		if (this instanceof StringImpl) {
 			return ((StringImpl) this).value;
 		} else {
-			throw new ClassCastException("can't convert "+getType().name()+" to String");
+			throw new ClassCastException("can't convert " + getType().name() + " to String");
 		}
 	}
 
@@ -112,7 +112,7 @@ abstract class CustomValueImpl implements CustomValue {
 		if (this instanceof NumberImpl) {
 			return ((NumberImpl) this).value;
 		} else {
-			throw new ClassCastException("can't convert "+getType().name()+" to Number");
+			throw new ClassCastException("can't convert " + getType().name() + " to Number");
 		}
 	}
 
@@ -121,11 +121,12 @@ abstract class CustomValueImpl implements CustomValue {
 		if (this instanceof BooleanImpl) {
 			return ((BooleanImpl) this).value;
 		} else {
-			throw new ClassCastException("can't convert "+getType().name()+" to Boolean");
+			throw new ClassCastException("can't convert " + getType().name() + " to Boolean");
 		}
 	}
 
 	private static final class ObjectImpl extends CustomValueImpl implements CvObject {
+
 		private final Map<String, CustomValue> entries;
 
 		public ObjectImpl(Map<String, CustomValue> entries) {
@@ -159,6 +160,7 @@ abstract class CustomValueImpl implements CustomValue {
 	}
 
 	private static final class ArrayImpl extends CustomValueImpl implements CvArray {
+
 		private final List<CustomValue> entries;
 
 		public ArrayImpl(List<CustomValue> entries) {
@@ -187,6 +189,7 @@ abstract class CustomValueImpl implements CustomValue {
 	}
 
 	private static final class StringImpl extends CustomValueImpl {
+
 		final String value;
 
 		public StringImpl(String value) {
@@ -200,6 +203,7 @@ abstract class CustomValueImpl implements CustomValue {
 	}
 
 	private static final class NumberImpl extends CustomValueImpl {
+
 		final Number value;
 
 		public NumberImpl(Number value) {
@@ -213,6 +217,7 @@ abstract class CustomValueImpl implements CustomValue {
 	}
 
 	private static final class BooleanImpl extends CustomValueImpl {
+
 		final boolean value;
 
 		public BooleanImpl(boolean value) {
@@ -226,6 +231,7 @@ abstract class CustomValueImpl implements CustomValue {
 	}
 
 	private static final class NullImpl extends CustomValueImpl {
+
 		@Override
 		public CvType getType() {
 			return CvType.NULL;

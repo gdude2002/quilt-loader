@@ -17,9 +17,8 @@
 package org.quiltmc.loader.impl.util;
 
 public final class StringUtil {
-	private StringUtil() {
 
-	}
+	private StringUtil() {}
 
 	public static String[] splitNamespaced(String s, String defaultNamespace) {
 		int i = s.indexOf(':');

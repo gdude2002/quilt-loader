@@ -16,18 +16,17 @@
 
 package org.quiltmc.loader.impl.metadata;
 
-import java.util.Map;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
+import java.util.Map;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 
 public abstract class AbstractModMetadata implements ModMetadata {
+
 	@Override
 	public boolean containsCustomElement(String key) {
 		return containsCustomValue(key);
@@ -60,32 +59,34 @@ public abstract class AbstractModMetadata implements ModMetadata {
 	@Deprecated
 	private static JsonElement convert(CustomValue value) {
 		switch (value.getType()) {
-		case ARRAY: {
-			JsonArray ret = new JsonArray();
+			case ARRAY:
+				{
+					JsonArray ret = new JsonArray();
 
-			for (CustomValue v : value.getAsArray()) {
-				ret.add(convert(v));
-			}
+					for (CustomValue v : value.getAsArray()) {
+						ret.add(convert(v));
+					}
 
-			return ret;
-		}
-		case BOOLEAN:
-			return new JsonPrimitive(value.getAsBoolean());
-		case NULL:
-			return JsonNull.INSTANCE;
-		case NUMBER:
-			return new JsonPrimitive(value.getAsNumber());
-		case OBJECT: {
-			JsonObject ret = new JsonObject();
+					return ret;
+				}
+			case BOOLEAN:
+				return new JsonPrimitive(value.getAsBoolean());
+			case NULL:
+				return JsonNull.INSTANCE;
+			case NUMBER:
+				return new JsonPrimitive(value.getAsNumber());
+			case OBJECT:
+				{
+					JsonObject ret = new JsonObject();
 
-			for (Map.Entry<String, CustomValue> entry : value.getAsObject()) {
-				ret.add(entry.getKey(), convert(entry.getValue()));
-			}
+					for (Map.Entry<String, CustomValue> entry : value.getAsObject()) {
+						ret.add(entry.getKey(), convert(entry.getValue()));
+					}
 
-			return ret;
-		}
-		case STRING:
-			return new JsonPrimitive(value.getAsString());
+					return ret;
+				}
+			case STRING:
+				return new JsonPrimitive(value.getAsString());
 		}
 
 		throw new IllegalStateException();

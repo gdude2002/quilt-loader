@@ -16,19 +16,6 @@
 
 package org.quiltmc.loader.impl.launch.common;
 
-import net.fabricmc.api.EnvType;
-import org.quiltmc.loader.impl.util.SystemProperties;
-import org.quiltmc.loader.impl.util.mappings.TinyRemapperMappingsHelper;
-import org.quiltmc.loader.impl.util.UrlConversionException;
-import org.quiltmc.loader.impl.util.UrlUtil;
-import org.quiltmc.loader.impl.util.Arguments;
-import net.fabricmc.mapping.tree.TinyTree;
-import net.fabricmc.tinyremapper.OutputConsumerPath;
-import net.fabricmc.tinyremapper.TinyRemapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.spongepowered.asm.mixin.MixinEnvironment;
-
 import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -38,8 +25,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarFile;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.mapping.tree.TinyTree;
+import net.fabricmc.tinyremapper.OutputConsumerPath;
+import net.fabricmc.tinyremapper.TinyRemapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.quiltmc.loader.impl.util.Arguments;
+import org.quiltmc.loader.impl.util.SystemProperties;
+import org.quiltmc.loader.impl.util.UrlConversionException;
+import org.quiltmc.loader.impl.util.UrlUtil;
+import org.quiltmc.loader.impl.util.mappings.TinyRemapperMappingsHelper;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
 public abstract class QuiltLauncherBase implements QuiltLauncher {
+
 	public static Path minecraftJar;
 
 	protected static Logger LOGGER = LogManager.getFormatterLogger("FabricLoader");
@@ -67,7 +67,13 @@ public abstract class QuiltLauncherBase implements QuiltLauncher {
 
 	private static boolean emittedInfo = false;
 
-	protected static Path deobfuscate(String gameId, String gameVersion, Path gameDir, Path jarFile, QuiltLauncher launcher) {
+	protected static Path deobfuscate(
+		String gameId,
+		String gameVersion,
+		Path gameDir,
+		Path jarFile,
+		QuiltLauncher launcher
+	) {
 		Path resultJarFile = jarFile;
 
 		LOGGER.debug("Requesting deobfuscation of " + jarFile.getFileName());
@@ -100,7 +106,9 @@ public abstract class QuiltLauncherBase implements QuiltLauncher {
 				Path deobfJarFileTmp = deobfJarDir.resolve(deobfJarFilename + ".tmp");
 
 				if (Files.exists(deobfJarFileTmp)) {
-					LOGGER.warn("Incomplete remapped file found! This means that the remapping process failed on the previous launch. If this persists, make sure to let us at Fabric know!");
+					LOGGER.warn(
+						"Incomplete remapped file found! This means that the remapping process failed on the previous launch. If this persists, make sure to let us at Fabric know!"
+					);
 					Files.deleteIfExists(deobfJarFile);
 					Files.deleteIfExists(deobfJarFileTmp);
 				}
@@ -113,7 +121,8 @@ public abstract class QuiltLauncherBase implements QuiltLauncher {
 							emittedInfo = true;
 						}
 
-						TinyRemapper remapper = TinyRemapper.newRemapper()
+						TinyRemapper remapper = TinyRemapper
+							.newRemapper()
 							.withMappings(TinyRemapperMappingsHelper.create(mappings, "official", targetNamespace))
 							.rebuildSourceFilenames(true)
 							.build();
@@ -135,16 +144,21 @@ public abstract class QuiltLauncherBase implements QuiltLauncher {
 							}
 						}
 
-						try (OutputConsumerPath outputConsumer = new OutputConsumerPath.Builder(deobfJarFileTmp)
+						try (
+							OutputConsumerPath outputConsumer = new OutputConsumerPath.Builder(deobfJarFileTmp)
 								// force jar despite the .tmp extension
 								.assumeArchive(true)
 								// don't accept class names from a blacklist of dependencies that Fabric itself utilizes
 								// TODO: really could use a better solution, as always...
-								.filter(clsName -> !clsName.startsWith("com/google/common/")
-										&& !clsName.startsWith("com/google/gson/")
-										&& !clsName.startsWith("com/google/thirdparty/")
-										&& !clsName.startsWith("org/apache/logging/log4j/"))
-								.build()) {
+								.filter(
+									clsName ->
+										!clsName.startsWith("com/google/common/") &&
+										!clsName.startsWith("com/google/gson/") &&
+										!clsName.startsWith("com/google/thirdparty/") &&
+										!clsName.startsWith("org/apache/logging/log4j/")
+								)
+								.build()
+						) {
 							for (Path path : depPaths) {
 								LOGGER.debug("Appending '" + path + "' to remapper classpath");
 								remapper.readClassPath(path);
@@ -176,7 +190,7 @@ public abstract class QuiltLauncherBase implements QuiltLauncher {
 						}
 
 						try (JarFile jar = new JarFile(deobfJarFileTmp.toFile())) {
-							found = jar.stream().anyMatch((e) -> e.getName().endsWith(".class"));
+							found = jar.stream().anyMatch(e -> e.getName().endsWith(".class"));
 						}
 
 						if (!found) {
@@ -222,13 +236,16 @@ public abstract class QuiltLauncherBase implements QuiltLauncher {
 				if (version == null) {
 					if ((version = argMap.get("version")) == null) {
 						version = "Unknown";
-						LOGGER.error("Launcher version unknown! Please provide it by setting the system property " + SystemProperties.LAUNCHER_NAME);
+						LOGGER.error(
+							"Launcher version unknown! Please provide it by setting the system property " +
+							SystemProperties.LAUNCHER_NAME
+						);
 					}
 				}
 				argMap.put("version", version);
 
 				String versionType = "";
-				if(argMap.containsKey("versionType") && !argMap.get("versionType").equalsIgnoreCase("release")){
+				if (argMap.containsKey("versionType") && !argMap.get("versionType").equalsIgnoreCase("release")) {
 					versionType = argMap.get("versionType") + "/";
 				}
 				argMap.put("versionType", versionType + "Quilt Loader");

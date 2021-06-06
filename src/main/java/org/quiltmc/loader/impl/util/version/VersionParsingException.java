@@ -20,6 +20,7 @@ package org.quiltmc.loader.impl.util.version;
 @SuppressWarnings("serial")
 @Deprecated
 public class VersionParsingException extends Exception {
+
 	public VersionParsingException() {
 		super();
 	}

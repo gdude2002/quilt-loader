@@ -21,6 +21,7 @@ import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.VersionParsingException;
 
 public final class VersionDeserializer {
+
 	public static SemanticVersion deserializeSemantic(String s) throws VersionParsingException {
 		if (s == null || s.isEmpty()) {
 			throw new VersionParsingException("Version must be a non-empty string!");

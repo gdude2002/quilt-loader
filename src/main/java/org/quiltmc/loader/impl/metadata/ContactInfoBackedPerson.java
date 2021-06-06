@@ -19,6 +19,7 @@ package org.quiltmc.loader.impl.metadata;
 import net.fabricmc.loader.api.metadata.ContactInformation;
 
 final class ContactInfoBackedPerson extends SimplePerson {
+
 	private final ContactInformation contact;
 
 	ContactInfoBackedPerson(String name, ContactInformation contact) {

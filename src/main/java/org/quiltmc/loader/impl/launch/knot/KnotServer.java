@@ -16,12 +16,12 @@
 
 package org.quiltmc.loader.impl.launch.knot;
 
+import java.io.File;
 import net.fabricmc.api.EnvType;
 import org.quiltmc.loader.impl.util.SystemProperties;
 
-import java.io.File;
-
 public class KnotServer {
+
 	public static void main(String[] args) {
 		String gameJarPath = System.getProperty(SystemProperties.GAME_JAR_PATH);
 		Knot knot = new Knot(EnvType.SERVER, gameJarPath != null ? new File(gameJarPath) : null);

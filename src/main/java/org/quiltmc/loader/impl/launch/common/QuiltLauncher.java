@@ -16,12 +16,11 @@
 
 package org.quiltmc.loader.impl.launch.common;
 
-import net.fabricmc.api.EnvType;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
+import net.fabricmc.api.EnvType;
 
 public interface QuiltLauncher {
 	MappingConfiguration getMappingConfiguration();

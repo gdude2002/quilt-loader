@@ -16,14 +16,13 @@
 
 package org.quiltmc.loader.impl.entrypoint.applet;
 
-import org.quiltmc.loader.impl.util.Arguments;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import javax.swing.*;
+import org.quiltmc.loader.impl.util.Arguments;
 
 /**
  * PLEASE NOTE:
@@ -35,6 +34,7 @@ import java.io.File;
  */
 @SuppressWarnings("serial")
 public class AppletFrame extends Frame implements WindowListener {
+
 	private AppletLauncher applet = null;
 
 	public AppletFrame(String title, ImageIcon icon) {
@@ -43,7 +43,10 @@ public class AppletFrame extends Frame implements WindowListener {
 			Image source = icon.getImage();
 			int w = source.getWidth(null);
 			int h = source.getHeight(null);
-			if (w == -1) { w = 32; h = 32; }
+			if (w == -1) {
+				w = 32;
+				h = 32;
+			}
 			BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g2d = (Graphics2D) image.getGraphics();
 			g2d.drawImage(source, 0, 0, null);
@@ -59,9 +62,9 @@ public class AppletFrame extends Frame implements WindowListener {
 
 		String username = arguments.getOrDefault("username", "Player");
 		String sessionid;
-		if (arguments.containsKey("session") /* 1.6 */) {
+		if (arguments.containsKey("session")/* 1.6 */) {
 			sessionid = arguments.get("session");
-		} else /* fallback */ {
+		} else /* fallback */{
 			sessionid = "";
 		}
 
@@ -89,12 +92,7 @@ public class AppletFrame extends Frame implements WindowListener {
 		int width = Integer.parseInt(arguments.getOrDefault("width", "854"));
 		int height = Integer.parseInt(arguments.getOrDefault("height", "480"));
 
-		applet = new AppletLauncher(
-			instance,
-			username, sessionid,
-			host, port, doConnect,
-			fullscreen, demo
-		);
+		applet = new AppletLauncher(instance, username, sessionid, host, port, doConnect, fullscreen, demo);
 
 		for (String key : arguments.keys()) {
 			applet.getParams().put("fabric.arguments." + key, arguments.get(key));
@@ -124,33 +122,20 @@ public class AppletFrame extends Frame implements WindowListener {
 	}
 
 	@Override
-	public void windowOpened(WindowEvent e) {
-
-	}
+	public void windowOpened(WindowEvent e) {}
 
 	@Override
-	public void windowActivated(WindowEvent e) {
-
-	}
+	public void windowActivated(WindowEvent e) {}
 
 	@Override
-	public void windowClosed(WindowEvent e) {
-
-	}
+	public void windowClosed(WindowEvent e) {}
 
 	@Override
-	public void windowIconified(WindowEvent e) {
-
-	}
+	public void windowIconified(WindowEvent e) {}
 
 	@Override
-	public void windowDeiconified(WindowEvent e) {
-
-	}
+	public void windowDeiconified(WindowEvent e) {}
 
 	@Override
-	public void windowDeactivated(WindowEvent e) {
-
-	}
-
+	public void windowDeactivated(WindowEvent e) {}
 }

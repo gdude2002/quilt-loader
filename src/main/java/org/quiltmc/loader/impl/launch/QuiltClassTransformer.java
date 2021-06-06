@@ -16,10 +16,11 @@
 
 package org.quiltmc.loader.impl.launch;
 
-import org.quiltmc.loader.impl.transformer.QuiltTransformer;
 import net.minecraft.launchwrapper.IClassTransformer;
+import org.quiltmc.loader.impl.transformer.QuiltTransformer;
 
 public class QuiltClassTransformer implements IClassTransformer {
+
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] basicClass) {
 		return QuiltTransformer.lwTransformerHook(name, transformedName, basicClass);

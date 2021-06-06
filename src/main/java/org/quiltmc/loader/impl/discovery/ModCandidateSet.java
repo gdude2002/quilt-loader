@@ -16,12 +16,12 @@
 
 package org.quiltmc.loader.impl.discovery;
 
-import net.fabricmc.loader.api.Version;
 import java.util.*;
-
+import net.fabricmc.loader.api.Version;
 import org.quiltmc.loader.impl.QuiltLoaderImpl;
 
 public class ModCandidateSet {
+
 	private final String modId;
 	private final List<String> modProvides = new ArrayList<>();
 	private final Set<ModCandidate> depthZeroCandidates = new HashSet<>();
@@ -33,7 +33,7 @@ public class ModCandidateSet {
 
 		if (av instanceof Comparable && bv instanceof Comparable) {
 			@SuppressWarnings("unchecked")
-			Comparable<? super Version> cv = (Comparable<? super Version>) bv; 
+			Comparable<? super Version> cv = (Comparable<? super Version>) bv;
 			return (cv.compareTo(av));
 		} else {
 			return 0;
@@ -86,7 +86,9 @@ public class ModCandidateSet {
 		if (depthZeroCandidates.size() > 1) {
 			StringBuilder sb = new StringBuilder("Duplicate mandatory mods found for '" + modId + "':");
 			for (ModCandidate mc : depthZeroCandidates) {
-				sb.append("\n" + mc.getInfo().getVersion() + " from " + ModResolver.getReadablePath(QuiltLoaderImpl.INSTANCE, mc));
+				sb.append(
+					"\n" + mc.getInfo().getVersion() + " from " + ModResolver.getReadablePath(QuiltLoaderImpl.INSTANCE, mc)
+				);
 			}
 			throw new ModResolutionException(sb.toString());
 		} else if (candidates.size() > 1) {

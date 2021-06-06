@@ -16,23 +16,29 @@
 
 package org.quiltmc.loader.impl.transformer;
 
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * Strips the specified interfaces, fields and methods from a class.
  */
 public class ClassStripper extends ClassVisitor {
+
 	private final Collection<String> stripInterfaces;
 	private final Collection<String> stripFields;
 	private final Collection<String> stripMethods;
 
-	public ClassStripper(int api, ClassVisitor classVisitor, Collection<String> stripInterfaces, Collection<String> stripFields, Collection<String> stripMethods) {
+	public ClassStripper(
+		int api,
+		ClassVisitor classVisitor,
+		Collection<String> stripInterfaces,
+		Collection<String> stripFields,
+		Collection<String> stripMethods
+	) {
 		super(api, classVisitor);
 		this.stripInterfaces = stripInterfaces;
 		this.stripFields = stripFields;
@@ -41,7 +47,7 @@ public class ClassStripper extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        if (!this.stripInterfaces.isEmpty()) {
+		if (!this.stripInterfaces.isEmpty()) {
 			List<String> interfacesList = new ArrayList<>();
 			for (String itf : interfaces) {
 				if (!this.stripInterfaces.contains(itf)) {

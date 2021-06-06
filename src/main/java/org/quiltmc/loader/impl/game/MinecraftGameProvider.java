@@ -16,6 +16,17 @@
 
 package org.quiltmc.loader.impl.game;
 
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import net.fabricmc.api.EnvType;
 import org.quiltmc.loader.impl.entrypoint.EntrypointTransformer;
 import org.quiltmc.loader.impl.entrypoint.minecraft.EntrypointPatchBranding;
@@ -28,19 +39,8 @@ import org.quiltmc.loader.impl.minecraft.McVersionLookup.McVersion;
 import org.quiltmc.loader.impl.util.Arguments;
 import org.quiltmc.loader.impl.util.SystemProperties;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-
 public class MinecraftGameProvider implements GameProvider {
+
 	private EnvType envType;
 	private String entrypoint;
 	private Arguments arguments;
@@ -48,11 +48,9 @@ public class MinecraftGameProvider implements GameProvider {
 	private McVersion versionData;
 	private boolean hasModLoader = false;
 
-	public static final EntrypointTransformer TRANSFORMER = new EntrypointTransformer(it -> Arrays.asList(
-			new EntrypointPatchHook(it),
-			new EntrypointPatchBranding(it),
-			new EntrypointPatchFML125(it)
-			));
+	public static final EntrypointTransformer TRANSFORMER = new EntrypointTransformer(
+		it -> Arrays.asList(new EntrypointPatchHook(it), new EntrypointPatchBranding(it), new EntrypointPatchFML125(it))
+	);
 
 	@Override
 	public String getGameId() {
@@ -85,10 +83,11 @@ public class MinecraftGameProvider implements GameProvider {
 		}
 
 		return Arrays.asList(
-				new BuiltinMod(url, new BuiltinModMetadata.Builder(getGameId(), getNormalizedGameVersion())
-						.setName(getGameName())
-						.build())
-				);
+			new BuiltinMod(
+				url,
+				new BuiltinModMetadata.Builder(getGameId(), getNormalizedGameVersion()).setName(getGameName()).build()
+			)
+		);
 	}
 
 	public Path getGameJar() {
@@ -138,12 +137,25 @@ public class MinecraftGameProvider implements GameProvider {
 		List<String> entrypointClasses;
 
 		if (envType == EnvType.CLIENT) {
-			entrypointClasses = Arrays.asList("net.minecraft.client.main.Main", "net.minecraft.client.MinecraftApplet", "com.mojang.minecraft.MinecraftApplet");
+			entrypointClasses =
+				Arrays.asList(
+					"net.minecraft.client.main.Main",
+					"net.minecraft.client.MinecraftApplet",
+					"com.mojang.minecraft.MinecraftApplet"
+				);
 		} else {
-			entrypointClasses = Arrays.asList("net.minecraft.server.Main", "net.minecraft.server.MinecraftServer", "com.mojang.minecraft.server.MinecraftServer");
+			entrypointClasses =
+				Arrays.asList(
+					"net.minecraft.server.Main",
+					"net.minecraft.server.MinecraftServer",
+					"com.mojang.minecraft.server.MinecraftServer"
+				);
 		}
 
-		Optional<GameProviderHelper.EntrypointResult> entrypointResult = GameProviderHelper.findFirstClass(loader, entrypointClasses);
+		Optional<GameProviderHelper.EntrypointResult> entrypointResult = GameProviderHelper.findFirstClass(
+			loader,
+			entrypointClasses
+		);
 
 		if (!entrypointResult.isPresent()) {
 			return false;

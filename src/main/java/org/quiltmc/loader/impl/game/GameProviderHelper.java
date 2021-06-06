@@ -16,17 +16,18 @@
 
 package org.quiltmc.loader.impl.game;
 
-import org.quiltmc.loader.impl.util.UrlConversionException;
-import org.quiltmc.loader.impl.util.UrlUtil;
-
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.quiltmc.loader.impl.util.UrlConversionException;
+import org.quiltmc.loader.impl.util.UrlUtil;
 
 final class GameProviderHelper {
+
 	public static class EntrypointResult {
+
 		public final String entrypointName;
 		public final Path entrypointPath;
 
@@ -36,9 +37,7 @@ final class GameProviderHelper {
 		}
 	}
 
-	private GameProviderHelper() {
-
-	}
+	private GameProviderHelper() {}
 
 	static Optional<Path> getSource(ClassLoader loader, String filename) {
 		URL url;
@@ -82,8 +81,9 @@ final class GameProviderHelper {
 	}
 
 	static Optional<EntrypointResult> findFirstClass(ClassLoader loader, List<String> classNames) {
-		List<String> entrypointFilenames = classNames.stream()
-			.map((ep) -> ep.replace('.', '/') + ".class")
+		List<String> entrypointFilenames = classNames
+			.stream()
+			.map(ep -> ep.replace('.', '/') + ".class")
 			.collect(Collectors.toList());
 
 		for (int i = 0; i < entrypointFilenames.size(); i++) {

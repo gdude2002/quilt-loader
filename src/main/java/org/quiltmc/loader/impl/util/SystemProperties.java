@@ -17,6 +17,7 @@
 package org.quiltmc.loader.impl.util;
 
 public final class SystemProperties {
+
 	public static final String DEVELOPMENT = "quilt.development";
 	public static final String SIDE = "quilt.side";
 	public static final String GAME_JAR_PATH = "quilt.gameJarPath";
@@ -25,6 +26,5 @@ public final class SystemProperties {
 	public static final String LAUNCHER_NAME = "quilt.launcherName";
 	public static final String DEBUG_MOD_RESOLVING = "quilt.debug.mod_resolving";
 
-	private SystemProperties() {
-	}
+	private SystemProperties() {}
 }

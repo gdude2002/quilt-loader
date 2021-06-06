@@ -16,16 +16,16 @@
 
 package org.quiltmc.loader.impl.util.version;
 
-import net.fabricmc.loader.api.SemanticVersion;
-import net.fabricmc.loader.api.VersionParsingException;
-
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+import net.fabricmc.loader.api.SemanticVersion;
+import net.fabricmc.loader.api.VersionParsingException;
 
 public class SemanticVersionImpl implements SemanticVersion {
+
 	private static final Pattern DOT_SEPARATED_ID = Pattern.compile("|[-0-9A-Za-z]+(\\.[-0-9A-Za-z]+)*");
 	private static final Pattern UNSIGNED_INTEGER = Pattern.compile("0|[1-9][0-9]*");
 	private final int[] components;
@@ -179,13 +179,18 @@ public class SemanticVersionImpl implements SemanticVersion {
 				return false;
 			}
 
-			return Objects.equals(prerelease, other.prerelease) && Objects.equals(build, other.build);
+			return (Objects.equals(prerelease, other.prerelease) && Objects.equals(build, other.build));
 		}
 	}
 
 	@Override
 	public int hashCode() {
-		return Arrays.hashCode(components) * 73 + (prerelease != null ? prerelease.hashCode() * 11 : 0) + (build != null ? build.hashCode() : 0);
+		return (
+			Arrays.hashCode(components) *
+			73 +
+			(prerelease != null ? prerelease.hashCode() * 11 : 0) +
+			(build != null ? build.hashCode() : 0)
+		);
 	}
 
 	@Override

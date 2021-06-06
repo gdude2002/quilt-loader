@@ -18,14 +18,15 @@ package org.quiltmc.loader.impl.transformer;
 
 import net.fabricmc.accesswidener.AccessWidenerVisitor;
 import net.fabricmc.api.EnvType;
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
-import org.quiltmc.loader.impl.game.MinecraftGameProvider;
-import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.quiltmc.loader.impl.QuiltLoaderImpl;
+import org.quiltmc.loader.impl.game.MinecraftGameProvider;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
 
 public final class QuiltTransformer {
+
 	public static byte[] lwTransformerHook(String name, String transformedName, byte[] bytes) {
 		boolean isDevelopment = QuiltLauncherBase.getLauncher().isDevelopment();
 		EnvType envType = QuiltLauncherBase.getLauncher().getEnvironmentType();
@@ -40,14 +41,15 @@ public final class QuiltTransformer {
 				return null;
 			}
 		}
-
 	}
 
 	public static byte[] transform(boolean isDevelopment, EnvType envType, String name, byte[] bytes) {
 		boolean isMinecraftClass = name.startsWith("net.minecraft.") || name.indexOf('.') < 0;
-		boolean transformAccess = isMinecraftClass && QuiltLauncherBase.getLauncher().getMappingConfiguration().requiresPackageAccessHack();
+		boolean transformAccess =
+			isMinecraftClass && QuiltLauncherBase.getLauncher().getMappingConfiguration().requiresPackageAccessHack();
 		boolean environmentStrip = !isMinecraftClass || isDevelopment;
-		boolean applyAccessWidener = isMinecraftClass && QuiltLoaderImpl.INSTANCE.getAccessWidener().getTargets().contains(name);
+		boolean applyAccessWidener =
+			isMinecraftClass && QuiltLoaderImpl.INSTANCE.getAccessWidener().getTargets().contains(name);
 
 		if (!transformAccess && !environmentStrip && !applyAccessWidener) {
 			return bytes;
@@ -59,7 +61,12 @@ public final class QuiltTransformer {
 		int visitorCount = 0;
 
 		if (applyAccessWidener) {
-			visitor = AccessWidenerVisitor.createClassVisitor(QuiltLoaderImpl.ASM_VERSION, visitor, QuiltLoaderImpl.INSTANCE.getAccessWidener());
+			visitor =
+				AccessWidenerVisitor.createClassVisitor(
+					QuiltLoaderImpl.ASM_VERSION,
+					visitor,
+					QuiltLoaderImpl.INSTANCE.getAccessWidener()
+				);
 			visitorCount++;
 		}
 
@@ -69,13 +76,23 @@ public final class QuiltTransformer {
 		}
 
 		if (environmentStrip) {
-			EnvironmentStrippingData stripData = new EnvironmentStrippingData(QuiltLoaderImpl.ASM_VERSION, envType.toString());
+			EnvironmentStrippingData stripData = new EnvironmentStrippingData(
+				QuiltLoaderImpl.ASM_VERSION,
+				envType.toString()
+			);
 			classReader.accept(stripData, ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES);
 			if (stripData.stripEntireClass()) {
 				throw new RuntimeException("Cannot load class " + name + " in environment type " + envType);
 			}
 			if (!stripData.isEmpty()) {
-				visitor = new ClassStripper(QuiltLoaderImpl.ASM_VERSION, visitor, stripData.getStripInterfaces(), stripData.getStripFields(), stripData.getStripMethods());
+				visitor =
+					new ClassStripper(
+						QuiltLoaderImpl.ASM_VERSION,
+						visitor,
+						stripData.getStripInterfaces(),
+						stripData.getStripFields(),
+						stripData.getStripMethods()
+					);
 				visitorCount++;
 			}
 		}

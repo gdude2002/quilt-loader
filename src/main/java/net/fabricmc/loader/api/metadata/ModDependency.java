@@ -17,7 +17,6 @@
 package net.fabricmc.loader.api.metadata;
 
 import java.util.Set;
-
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.VersionPredicate;
 

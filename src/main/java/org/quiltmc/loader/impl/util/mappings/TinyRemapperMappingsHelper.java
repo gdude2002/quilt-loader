@@ -23,16 +23,15 @@ import net.fabricmc.mapping.tree.TinyTree;
 import net.fabricmc.tinyremapper.IMappingProvider;
 
 public class TinyRemapperMappingsHelper {
-	private TinyRemapperMappingsHelper() {
 
-	}
+	private TinyRemapperMappingsHelper() {}
 
 	private static IMappingProvider.Member memberOf(String className, String memberName, String descriptor) {
 		return new IMappingProvider.Member(className, memberName, descriptor);
 	}
 
 	public static IMappingProvider create(TinyTree mappings, String from, String to) {
-		return (acceptor) -> {
+		return acceptor -> {
 			for (ClassDef classDef : mappings.getClasses()) {
 				String className = classDef.getName(from);
 				acceptor.acceptClass(className, classDef.getName(to));
@@ -42,7 +41,11 @@ public class TinyRemapperMappingsHelper {
 				}
 
 				for (MethodDef method : classDef.getMethods()) {
-					IMappingProvider.Member methodIdentifier = memberOf(className, method.getName(from), method.getDescriptor(from));
+					IMappingProvider.Member methodIdentifier = memberOf(
+						className,
+						method.getName(from),
+						method.getDescriptor(from)
+					);
 					acceptor.acceptMethod(methodIdentifier, method.getName(to));
 				}
 			}

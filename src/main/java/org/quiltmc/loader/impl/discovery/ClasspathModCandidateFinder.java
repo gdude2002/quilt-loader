@@ -16,11 +16,6 @@
 
 package org.quiltmc.loader.impl.discovery;
 
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
-import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
-import org.quiltmc.loader.impl.util.UrlConversionException;
-import org.quiltmc.loader.impl.util.UrlUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -29,8 +24,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
+import org.quiltmc.loader.impl.QuiltLoaderImpl;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
+import org.quiltmc.loader.impl.util.UrlConversionException;
+import org.quiltmc.loader.impl.util.UrlUtil;
 
 public class ClasspathModCandidateFinder implements ModCandidateFinder {
+
 	@Override
 	public void findCandidates(QuiltLoaderImpl loader, BiConsumer<URL, Boolean> appender) {
 		Stream<URL> urls;
@@ -81,7 +81,14 @@ public class ClasspathModCandidateFinder implements ModCandidateFinder {
 								}
 							}
 						} catch (UrlConversionException e) {
-							loader.getLogger().warn("[ClasspathModCandidateFinder] Failed to add dev directory " + file.getAbsolutePath() + " to classpath!", e);
+							loader
+								.getLogger()
+								.warn(
+									"[ClasspathModCandidateFinder] Failed to add dev directory " +
+									file.getAbsolutePath() +
+									" to classpath!",
+									e
+								);
 						}
 					}
 				}
@@ -91,7 +98,7 @@ public class ClasspathModCandidateFinder implements ModCandidateFinder {
 				throw new RuntimeException(e);
 			}
 		} else {
-			if(fabricCodeSource != null) {
+			if (fabricCodeSource != null) {
 				urls = Stream.of(fabricCodeSource);
 			} else {
 				loader.getLogger().debug("Could not fallback to itself for mod candidate lookup!");
@@ -99,21 +106,23 @@ public class ClasspathModCandidateFinder implements ModCandidateFinder {
 			}
 		}
 
-		urls.forEach((url) -> {
-			loader.getLogger().debug("[ClasspathModCandidateFinder] Processing " + url.getPath());
-			File f;
-			try {
-				f = UrlUtil.asFile(url);
-			} catch (UrlConversionException e) {
-				// pass
-				return;
-			}
+		urls.forEach(
+			url -> {
+				loader.getLogger().debug("[ClasspathModCandidateFinder] Processing " + url.getPath());
+				File f;
+				try {
+					f = UrlUtil.asFile(url);
+				} catch (UrlConversionException e) {
+					// pass
+					return;
+				}
 
-			if (f.exists()) {
-				if (f.isDirectory() || f.getName().endsWith(".jar")) {
-					appender.accept(url, false);
+				if (f.exists()) {
+					if (f.isDirectory() || f.getName().endsWith(".jar")) {
+						appender.accept(url, false);
+					}
 				}
 			}
-		});
+		);
 	}
 }

@@ -36,5 +36,4 @@ public abstract class MixinGuiMain extends Screen {
 	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float delta, CallbackInfo info) {
 		this.textRenderer.draw(matrixStack, "Fabric Test Mod", 2, this.height - 30, -1);
 	}
-
 }

@@ -16,18 +16,18 @@
 
 package org.quiltmc.loader.impl;
 
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import org.quiltmc.loader.impl.metadata.LoaderModMetadata;
 import org.quiltmc.loader.impl.util.FileSystemUtil;
 import org.quiltmc.loader.impl.util.UrlConversionException;
 import org.quiltmc.loader.impl.util.UrlUtil;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 public class ModContainer implements net.fabricmc.loader.api.ModContainer {
+
 	private final LoaderModMetadata info;
 	private final URL originUrl;
 	private volatile Path root;
@@ -59,14 +59,13 @@ public class ModContainer implements net.fabricmc.loader.api.ModContainer {
 
 			if (Files.isDirectory(holder)) {
 				return holder;
-			} else /* JAR */ {
+			} else /* JAR */{
 				FileSystemUtil.FileSystemDelegate delegate = FileSystemUtil.getJarFileSystem(holder, false);
 				if (delegate.get() == null) {
 					throw new RuntimeException("Could not open JAR file " + holder.getFileName() + " for NIO reading!");
 				}
 
 				return delegate.get().getRootDirectories().iterator().next();
-
 				// We never close here. It's fine. getJarFileSystem() will handle it gracefully, and so should mods
 			}
 		} catch (IOException | UrlConversionException e) {

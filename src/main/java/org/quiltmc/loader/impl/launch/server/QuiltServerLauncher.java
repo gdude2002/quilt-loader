@@ -16,15 +16,15 @@
 
 package org.quiltmc.loader.impl.launch.server;
 
-import org.quiltmc.loader.impl.util.SystemProperties;
-import org.quiltmc.loader.impl.util.UrlUtil;
-
 import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import org.quiltmc.loader.impl.util.SystemProperties;
+import org.quiltmc.loader.impl.util.UrlUtil;
 
 public class QuiltServerLauncher {
+
 	private static final ClassLoader parentLoader = QuiltServerLauncher.class.getClassLoader();
 	private static String mainClass = "org.quiltmc.loader.impl.launch.knot.KnotServer";
 
@@ -101,7 +101,14 @@ public class QuiltServerLauncher {
 
 		System.setProperty(SystemProperties.GAME_JAR_PATH, serverJar.getAbsolutePath());
 		try {
-			URLClassLoader newClassLoader = new InjectingURLClassLoader(new URL[] { QuiltServerLauncher.class.getProtectionDomain().getCodeSource().getLocation(), UrlUtil.asUrl(serverJar) }, parentLoader, "com.google.common.jimfs.");
+			URLClassLoader newClassLoader = new InjectingURLClassLoader(
+				new URL[] {
+					QuiltServerLauncher.class.getProtectionDomain().getCodeSource().getLocation(),
+					UrlUtil.asUrl(serverJar),
+				},
+				parentLoader,
+				"com.google.common.jimfs."
+			);
 			Thread.currentThread().setContextClassLoader(newClassLoader);
 			launch(mainClass, newClassLoader, runArguments);
 		} catch (Exception ex) {

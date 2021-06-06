@@ -19,6 +19,7 @@ package org.quiltmc.loader.impl.util;
 import java.util.*;
 
 public final class Arguments {
+
 	public static final String GAME_VERSION = "fabric.gameVersion";
 
 	private final Map<String, String> values;

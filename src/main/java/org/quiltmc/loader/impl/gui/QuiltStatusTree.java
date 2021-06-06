@@ -23,15 +23,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Map;
-
 import org.quiltmc.json5.JsonReader;
 import org.quiltmc.json5.JsonToken;
 import org.quiltmc.json5.JsonWriter;
 
 public final class QuiltStatusTree {
+
 	public enum FabricTreeWarningLevel {
 		ERROR,
 		WARN,
@@ -63,11 +63,16 @@ public final class QuiltStatusTree {
 		/** @return The level to use, or null if the given char doesn't map to any level. */
 		public static FabricTreeWarningLevel fromChar(char c) {
 			switch (c) {
-				case '-': return NONE;
-				case '+': return INFO;
-				case '!': return WARN;
-				case 'x': return ERROR;
-				default: return null;
+				case '-':
+					return NONE;
+				case '+':
+					return INFO;
+				case '!':
+					return WARN;
+				case 'x':
+					return ERROR;
+				default:
+					return null;
 			}
 		}
 
@@ -87,7 +92,7 @@ public final class QuiltStatusTree {
 
 	public enum FabricBasicButtonType {
 		/** Sends the status message to the main application, then disables itself. */
-		CLICK_ONCE;
+		CLICK_ONCE,
 	}
 
 	/** No icon is displayed. */
@@ -146,7 +151,6 @@ public final class QuiltStatusTree {
 
 	public QuiltStatusTree() {}
 
-
 	public QuiltStatusTab addTab(String name) {
 		QuiltStatusTab tab = new QuiltStatusTab(name);
 		tabs.add(tab);
@@ -179,7 +183,7 @@ public final class QuiltStatusTree {
 			buttons.add(new QuiltStatusButton(reader));
 		}
 		reader.endArray();
-	
+
 		reader.endObject();
 	}
 
@@ -217,6 +221,7 @@ public final class QuiltStatusTree {
 	}
 
 	public static final class QuiltStatusButton {
+
 		public final String text;
 		public boolean shouldClose, shouldContinue;
 
@@ -255,6 +260,7 @@ public final class QuiltStatusTree {
 	}
 
 	public static final class QuiltStatusTab {
+
 		public final QuiltStatusNode node;
 
 		/** The minimum warning level to display for this tab. */
@@ -287,6 +293,7 @@ public final class QuiltStatusTree {
 	}
 
 	public static final class QuiltStatusNode {
+
 		private QuiltStatusNode parent;
 
 		public String name;
@@ -512,7 +519,7 @@ public final class QuiltStatusTree {
 		public QuiltStatusNode getFileNode(String file, String folderType, String fileType) {
 			QuiltStatusNode fileNode = this;
 
-			pathIteration: for (String s : file.split("/")) {
+			pathIteration:for (String s : file.split("/")) {
 				if (s.isEmpty()) {
 					continue;
 				}

@@ -16,9 +16,6 @@
 
 package org.quiltmc.loader.impl.launch.knot;
 
-import net.fabricmc.api.EnvType;
-import org.quiltmc.loader.impl.game.GameProvider;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -26,9 +23,13 @@ import java.net.URLClassLoader;
 import java.security.SecureClassLoader;
 import java.util.Enumeration;
 import java.util.Objects;
+import net.fabricmc.api.EnvType;
+import org.quiltmc.loader.impl.game.GameProvider;
 
 class KnotClassLoader extends SecureClassLoader implements KnotClassLoaderInterface {
+
 	private static class DynamicURLClassLoader extends URLClassLoader {
+
 		private DynamicURLClassLoader(URL[] urls) {
 			super(urls, new DummyClassLoader());
 		}
@@ -149,7 +150,10 @@ class KnotClassLoader extends SecureClassLoader implements KnotClassLoaderInterf
 			if (c == null && !name.startsWith("com.google.gson.") && !name.startsWith("java.")) {
 				byte[] input = delegate.getPostMixinClassByteArray(name);
 				if (input != null) {
-					KnotClassDelegate.Metadata metadata = delegate.getMetadata(name, urlLoader.getResource(delegate.getClassFileName(name)));
+					KnotClassDelegate.Metadata metadata = delegate.getMetadata(
+						name,
+						urlLoader.getResource(delegate.getClassFileName(name))
+					);
 
 					int pkgDelimiterPos = name.lastIndexOf('.');
 					if (pkgDelimiterPos > 0) {

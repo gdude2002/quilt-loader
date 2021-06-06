@@ -16,11 +16,11 @@
 
 package org.quiltmc.loader.impl.metadata;
 
-
 import org.quiltmc.json5.JsonReader;
 
 @SuppressWarnings("serial")
 public class ParseMetadataException extends Exception {
+
 	public ParseMetadataException(String message) {
 		super(message);
 	}
@@ -38,6 +38,7 @@ public class ParseMetadataException extends Exception {
 	}
 
 	public static class MissingRequired extends ParseMetadataException {
+
 		public MissingRequired(String field) {
 			super(String.format("Missing required field \"%s\".", field));
 		}

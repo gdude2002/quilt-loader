@@ -16,27 +16,36 @@
 
 package org.quiltmc.loader.impl.entrypoint.minecraft;
 
-import net.fabricmc.api.EnvType;
-import org.quiltmc.loader.impl.entrypoint.EntrypointPatch;
-import org.quiltmc.loader.impl.entrypoint.EntrypointTransformer;
-import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.*;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Consumer;
+import net.fabricmc.api.EnvType;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.*;
+import org.quiltmc.loader.impl.entrypoint.EntrypointPatch;
+import org.quiltmc.loader.impl.entrypoint.EntrypointTransformer;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
 
 public class EntrypointPatchHook extends EntrypointPatch {
+
 	public EntrypointPatchHook(EntrypointTransformer transformer) {
 		super(transformer);
 	}
 
 	private void finishEntrypoint(EnvType type, ListIterator<AbstractInsnNode> it) {
-		it.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/quiltmc/loader/impl/entrypoint/minecraft/hooks/Entrypoint" + (type == EnvType.CLIENT ? "Client" : "Server"), "start", "(Ljava/io/File;Ljava/lang/Object;)V", false));
+		it.add(
+			new MethodInsnNode(
+				Opcodes.INVOKESTATIC,
+				"org/quiltmc/loader/impl/entrypoint/minecraft/hooks/Entrypoint" +
+				(type == EnvType.CLIENT ? "Client" : "Server"),
+				"start",
+				"(Ljava/io/File;Ljava/lang/Object;)V",
+				false
+			)
+		);
 	}
 
 	@Override
@@ -74,9 +83,10 @@ public class EntrypointPatchHook extends EntrypointPatch {
 
 			if (type == EnvType.CLIENT) {
 				// pre-1.6 route
-				List<FieldNode> newGameFields = findFields(mainClass,
-						(f) -> !isStatic(f.access) && f.desc.startsWith("L") && !f.desc.startsWith("Ljava/")
-						);
+				List<FieldNode> newGameFields = findFields(
+					mainClass,
+					f -> !isStatic(f.access) && f.desc.startsWith("L") && !f.desc.startsWith("Ljava/")
+				);
 
 				if (newGameFields.size() == 1) {
 					gameEntrypoint = Type.getType(newGameFields.get(0).desc).getClassName();
@@ -85,17 +95,25 @@ public class EntrypointPatchHook extends EntrypointPatch {
 
 			if (gameEntrypoint == null) {
 				// main method searches
-				MethodNode mainMethod = findMethod(mainClass, (method) -> method.name.equals("main") && method.desc.equals("([Ljava/lang/String;)V") && isPublicStatic(method.access));
+				MethodNode mainMethod = findMethod(
+					mainClass,
+					method ->
+						method.name.equals("main") && method.desc.equals("([Ljava/lang/String;)V") && isPublicStatic(method.access)
+				);
 				if (mainMethod == null) {
 					throw new RuntimeException("Could not find main method in " + entrypoint + "!");
 				}
 
 				if (type == EnvType.SERVER) {
 					// pre-1.6 method search route
-					MethodInsnNode newGameInsn = (MethodInsnNode) findInsn(mainMethod,
-							(insn) -> insn.getOpcode() == Opcodes.INVOKESPECIAL && ((MethodInsnNode) insn).name.equals("<init>") && ((MethodInsnNode) insn).owner.equals(mainClass.name),
-							false
-							);
+					MethodInsnNode newGameInsn = (MethodInsnNode) findInsn(
+						mainMethod,
+						insn ->
+							insn.getOpcode() == Opcodes.INVOKESPECIAL &&
+							((MethodInsnNode) insn).name.equals("<init>") &&
+							((MethodInsnNode) insn).owner.equals(mainClass.name),
+						false
+					);
 
 					if (newGameInsn != null) {
 						gameEntrypoint = newGameInsn.owner.replace('/', '.');
@@ -105,20 +123,43 @@ public class EntrypointPatchHook extends EntrypointPatch {
 
 				if (gameEntrypoint == null) {
 					// modern method search routes
-					MethodInsnNode newGameInsn = (MethodInsnNode) findInsn(mainMethod,
-							type == EnvType.CLIENT
-							? (insn) -> (insn.getOpcode() == Opcodes.INVOKESPECIAL || insn.getOpcode() == Opcodes.INVOKEVIRTUAL) && !((MethodInsnNode) insn).owner.startsWith("java/")
-									: (insn) -> insn.getOpcode() == Opcodes.INVOKESPECIAL && ((MethodInsnNode) insn).name.equals("<init>") && hasSuperClass(((MethodInsnNode) insn).owner, mainClass.name, launcher),
-									true
-							);
+					MethodInsnNode newGameInsn = (MethodInsnNode) findInsn(
+						mainMethod,
+						type == EnvType.CLIENT
+							? insn ->
+								(insn.getOpcode() == Opcodes.INVOKESPECIAL || insn.getOpcode() == Opcodes.INVOKEVIRTUAL) &&
+								!((MethodInsnNode) insn).owner.startsWith("java/")
+							: insn ->
+								insn.getOpcode() == Opcodes.INVOKESPECIAL &&
+								((MethodInsnNode) insn).name.equals("<init>") &&
+								hasSuperClass(((MethodInsnNode) insn).owner, mainClass.name, launcher),
+						true
+					);
 
 					// New 20w20b way of finding the server constructor
 					if (newGameInsn == null && type == EnvType.SERVER) {
-						newGameInsn = (MethodInsnNode) findInsn(mainMethod, insn -> (insn instanceof MethodInsnNode) && insn.getOpcode() == Opcodes.INVOKESPECIAL && hasStrInMethod(((MethodInsnNode)insn).owner, "<clinit>", "()V", "^[a-fA-F0-9]{40}$", launcher), false);
+						newGameInsn =
+							(MethodInsnNode) findInsn(
+								mainMethod,
+								insn ->
+									(insn instanceof MethodInsnNode) &&
+									insn.getOpcode() == Opcodes.INVOKESPECIAL &&
+									hasStrInMethod(((MethodInsnNode) insn).owner, "<clinit>", "()V", "^[a-fA-F0-9]{40}$", launcher),
+								false
+							);
 					}
 
 					// Detect 20w22a by searching for a specific log message
-					if(type == EnvType.SERVER && hasStrInMethod(mainClass.name, mainMethod.name, mainMethod.desc, "Safe mode active, only vanilla datapack will be loaded", launcher)) {
+					if (
+						type == EnvType.SERVER &&
+						hasStrInMethod(
+							mainClass.name,
+							mainMethod.name,
+							mainMethod.desc,
+							"Safe mode active, only vanilla datapack will be loaded",
+							launcher
+						)
+					) {
 						is20w22aServerOrHigher = true;
 						gameEntrypoint = mainClass.name;
 					}
@@ -135,7 +176,9 @@ public class EntrypointPatchHook extends EntrypointPatch {
 			}
 
 			debug("Found game constructor: " + entrypoint + " -> " + gameEntrypoint);
-			ClassNode gameClass = gameEntrypoint.equals(entrypoint) || is20w22aServerOrHigher ? mainClass : loadClass(launcher, gameEntrypoint);
+			ClassNode gameClass = gameEntrypoint.equals(entrypoint) || is20w22aServerOrHigher
+				? mainClass
+				: loadClass(launcher, gameEntrypoint);
 			if (gameClass == null) {
 				throw new RuntimeException("Could not load game class " + gameEntrypoint + "!");
 			}
@@ -145,7 +188,7 @@ public class EntrypointPatchHook extends EntrypointPatch {
 			AbstractInsnNode lwjglLogNode = null;
 			int gameMethodQuality = 0;
 
-			if(!is20w22aServerOrHigher) {
+			if (!is20w22aServerOrHigher) {
 				for (MethodNode gmCandidate : gameClass.methods) {
 					if (gmCandidate.name.equals("<init>")) {
 						gameConstructor = gmCandidate;
@@ -169,7 +212,9 @@ public class EntrypointPatchHook extends EntrypointPatch {
 									//This log output was renamed to Backend library in 19w34a
 									if (s.startsWith("LWJGL Version: ") || s.startsWith("Backend library: ")) {
 										hasLwjglLog = true;
-										if ("LWJGL Version: ".equals(s) || "LWJGL Version: {}".equals(s) || "Backend library: {}".equals(s)) {
+										if (
+											"LWJGL Version: ".equals(s) || "LWJGL Version: {}".equals(s) || "Backend library: {}".equals(s)
+										) {
 											qual = 3;
 											lwjglLogNode = insn;
 										}
@@ -186,7 +231,14 @@ public class EntrypointPatchHook extends EntrypointPatch {
 					}
 				}
 			} else {
-				gameMethod = findMethod(mainClass, (method) -> method.name.equals("main") && method.desc.equals("([Ljava/lang/String;)V") && isPublicStatic(method.access));
+				gameMethod =
+					findMethod(
+						mainClass,
+						method ->
+							method.name.equals("main") &&
+							method.desc.equals("([Ljava/lang/String;)V") &&
+							isPublicStatic(method.access)
+					);
 			}
 
 			if (gameMethod == null) {
@@ -198,7 +250,7 @@ public class EntrypointPatchHook extends EntrypointPatch {
 
 			if (type == EnvType.SERVER) {
 				ListIterator<AbstractInsnNode> it = gameMethod.instructions.iterator();
-				if(!is20w22aServerOrHigher) {
+				if (!is20w22aServerOrHigher) {
 					// Server-side: first argument (or null!) is runDirectory, run at end of init
 					moveBefore(it, Opcodes.RETURN);
 					// runDirectory
@@ -222,7 +274,11 @@ public class EntrypointPatchHook extends EntrypointPatch {
 					debug("20w22a+ detected, patching main method...");
 
 					// Find the "server.properties".
-					LdcInsnNode serverPropertiesLdc = (LdcInsnNode) findInsn(gameMethod, insn -> insn instanceof LdcInsnNode && ((LdcInsnNode) insn).cst.equals("server.properties"), false);
+					LdcInsnNode serverPropertiesLdc = (LdcInsnNode) findInsn(
+						gameMethod,
+						insn -> insn instanceof LdcInsnNode && ((LdcInsnNode) insn).cst.equals("server.properties"),
+						false
+					);
 
 					// Move before the `server.properties` ldc is pushed onto stack
 					moveBefore(it, serverPropertiesLdc);
@@ -233,15 +289,22 @@ public class EntrypointPatchHook extends EntrypointPatch {
 					// Cannot return a void or boolean
 					// Is only method that returns a class instance
 					// If we do not find this, then we are certain this is 20w22a.
-					MethodNode serverStartMethod = findMethod(mainClass, method -> {
-						if (method.name.equals("main") && method.desc.equals("([Ljava/lang/String;)V")) {
-							return false;
+					MethodNode serverStartMethod = findMethod(
+						mainClass,
+						method -> {
+							if (method.name.equals("main") && method.desc.equals("([Ljava/lang/String;)V")) {
+								return false;
+							}
+
+							final Type methodReturnType = Type.getReturnType(method.desc);
+
+							return (
+								methodReturnType.getSort() != Type.BOOLEAN &&
+								methodReturnType.getSort() != Type.VOID &&
+								methodReturnType.getSort() == Type.OBJECT
+							);
 						}
-
-						final Type methodReturnType = Type.getReturnType(method.desc);
-
-						return methodReturnType.getSort() != Type.BOOLEAN && methodReturnType.getSort() != Type.VOID && methodReturnType.getSort() == Type.OBJECT;
-					});
+					);
 
 					if (serverStartMethod == null) {
 						// We are running 20w22a, this requires a separate process for capturing game instance
@@ -316,19 +379,23 @@ public class EntrypointPatchHook extends EntrypointPatch {
 						final ListIterator<AbstractInsnNode> serverStartIt = serverStartMethod.instructions.iterator();
 
 						// 1.16-pre1+ Find the only constructor which takes a Thread as it's first parameter
-						MethodInsnNode dedicatedServerConstructor = (MethodInsnNode) findInsn(serverStartMethod, insn -> {
-							if (insn instanceof MethodInsnNode && ((MethodInsnNode) insn).name.equals("<init>")) {
-								Type constructorType = Type.getMethodType(((MethodInsnNode) insn).desc);
+						MethodInsnNode dedicatedServerConstructor = (MethodInsnNode) findInsn(
+							serverStartMethod,
+							insn -> {
+								if (insn instanceof MethodInsnNode && ((MethodInsnNode) insn).name.equals("<init>")) {
+									Type constructorType = Type.getMethodType(((MethodInsnNode) insn).desc);
 
-								if (constructorType.getArgumentTypes().length <= 0) {
-									return false;
+									if (constructorType.getArgumentTypes().length <= 0) {
+										return false;
+									}
+
+									return constructorType.getArgumentTypes()[0].getDescriptor().equals("Ljava/lang/Thread;");
 								}
 
-								return constructorType.getArgumentTypes()[0].getDescriptor().equals("Ljava/lang/Thread;");
-							}
-
-							return false;
-						}, false);
+								return false;
+							},
+							false
+						);
 
 						if (dedicatedServerConstructor == null) {
 							throw new RuntimeException("Could not find dedicated server constructor");
@@ -339,9 +406,24 @@ public class EntrypointPatchHook extends EntrypointPatch {
 
 						// Duplicate dedicated server instance for loader
 						serverStartIt.add(new InsnNode(Opcodes.DUP));
-						serverStartIt.add(new FieldInsnNode(Opcodes.GETSTATIC, "org/quiltmc/loader/impl/QuiltLoaderImpl", "INSTANCE", "Lorg/quiltmc/loader/impl/QuiltLoaderImpl;"));
+						serverStartIt.add(
+							new FieldInsnNode(
+								Opcodes.GETSTATIC,
+								"org/quiltmc/loader/impl/QuiltLoaderImpl",
+								"INSTANCE",
+								"Lorg/quiltmc/loader/impl/QuiltLoaderImpl;"
+							)
+						);
 						serverStartIt.add(new InsnNode(Opcodes.SWAP));
-						serverStartIt.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "org/quiltmc/loader/impl/QuiltLoaderImpl", "setGameInstance", "(Ljava/lang/Object;)V", false));
+						serverStartIt.add(
+							new MethodInsnNode(
+								Opcodes.INVOKEVIRTUAL,
+								"org/quiltmc/loader/impl/QuiltLoaderImpl",
+								"setGameInstance",
+								"(Ljava/lang/Object;)V",
+								false
+							)
+						);
 					}
 
 					patched = true;
@@ -349,7 +431,7 @@ public class EntrypointPatchHook extends EntrypointPatch {
 			} else if (type == EnvType.CLIENT && isApplet) {
 				// Applet-side: field is private static File, run at end
 				// At the beginning, set file field (hook)
-				FieldNode runDirectory = findField(gameClass, (f) -> isStatic(f.access) && f.desc.equals("Ljava/io/File;"));
+				FieldNode runDirectory = findField(gameClass, f -> isStatic(f.access) && f.desc.equals("Ljava/io/File;"));
 				if (runDirectory == null) {
 					// TODO: Handle pre-indev versions.
 					//
@@ -369,15 +451,31 @@ public class EntrypointPatchHook extends EntrypointPatch {
 					it.add(new LdcInsnNode("."));
 					it.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "java/io/File", "<init>", "(Ljava/lang/String;)V", false)); */
 					it.add(new InsnNode(Opcodes.ACONST_NULL));
-					it.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/quiltmc/loader/impl/entrypoint/applet/AppletMain", "hookGameDir", "(Ljava/io/File;)Ljava/io/File;", false));
+					it.add(
+						new MethodInsnNode(
+							Opcodes.INVOKESTATIC,
+							"org/quiltmc/loader/impl/entrypoint/applet/AppletMain",
+							"hookGameDir",
+							"(Ljava/io/File;)Ljava/io/File;",
+							false
+						)
+					);
 					it.add(new VarInsnNode(Opcodes.ALOAD, 0));
 					finishEntrypoint(type, it);
 				} else {
 					// Indev and above.
 					ListIterator<AbstractInsnNode> it = gameConstructor.instructions.iterator();
-					moveAfter(it, Opcodes.INVOKESPECIAL); /* Object.init */
+					moveAfter(it, Opcodes.INVOKESPECIAL);/* Object.init */
 					it.add(new FieldInsnNode(Opcodes.GETSTATIC, gameClass.name, runDirectory.name, runDirectory.desc));
-					it.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/quiltmc/loader/impl/entrypoint/applet/AppletMain", "hookGameDir", "(Ljava/io/File;)Ljava/io/File;", false));
+					it.add(
+						new MethodInsnNode(
+							Opcodes.INVOKESTATIC,
+							"org/quiltmc/loader/impl/entrypoint/applet/AppletMain",
+							"hookGameDir",
+							"(Ljava/io/File;)Ljava/io/File;",
+							false
+						)
+					);
 					it.add(new FieldInsnNode(Opcodes.PUTSTATIC, gameClass.name, runDirectory.name, runDirectory.desc));
 
 					it = gameMethod.instructions.iterator();
@@ -401,9 +499,10 @@ public class EntrypointPatchHook extends EntrypointPatch {
 				ListIterator<AbstractInsnNode> consIt = gameConstructor.instructions.iterator();
 				while (consIt.hasNext()) {
 					AbstractInsnNode insn = consIt.next();
-					if (insn.getOpcode() == Opcodes.PUTFIELD
-							&& ((FieldInsnNode) insn).desc.equals("Ljava/io/File;")) {
-						debug("Run directory field is thought to be " + ((FieldInsnNode) insn).owner + "/" + ((FieldInsnNode) insn).name);
+					if (insn.getOpcode() == Opcodes.PUTFIELD && ((FieldInsnNode) insn).desc.equals("Ljava/io/File;")) {
+						debug(
+							"Run directory field is thought to be " + ((FieldInsnNode) insn).owner + "/" + ((FieldInsnNode) insn).name
+						);
 
 						ListIterator<AbstractInsnNode> it;
 						if (gameMethod == gameConstructor) {
@@ -418,7 +517,14 @@ public class EntrypointPatchHook extends EntrypointPatch {
 							}
 						}
 						it.add(new VarInsnNode(Opcodes.ALOAD, 0));
-						it.add(new FieldInsnNode(Opcodes.GETFIELD, ((FieldInsnNode) insn).owner, ((FieldInsnNode) insn).name, ((FieldInsnNode) insn).desc));
+						it.add(
+							new FieldInsnNode(
+								Opcodes.GETFIELD,
+								((FieldInsnNode) insn).owner,
+								((FieldInsnNode) insn).name,
+								((FieldInsnNode) insn).desc
+							)
+						);
 						it.add(new VarInsnNode(Opcodes.ALOAD, 0));
 						finishEntrypoint(type, it);
 

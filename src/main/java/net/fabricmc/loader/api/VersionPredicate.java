@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public final class VersionPredicate {
+
 	public enum Type {
 		ANY("*"),
 		EQUALS("="),
@@ -100,42 +101,42 @@ public final class VersionPredicate {
 			}
 
 			switch (firstChar) {
-			case '*':
-				if (matcher.length() == 1) {
-					return Collections.singleton(new VersionPredicate(Type.ANY, ""));
-				} else {
+				case '*':
+					if (matcher.length() == 1) {
+						return Collections.singleton(new VersionPredicate(Type.ANY, ""));
+					} else {
+						predicates.add(new VersionPredicate(Type.EQUALS, matcher));
+					}
+
+					break;
+				case '>':
+					if (secondChar == '=') {
+						predicates.add(new VersionPredicate(Type.GREATER_THAN_OR_EQUAL, matcher.substring(2)));
+					} else {
+						predicates.add(new VersionPredicate(Type.GREATER_THAN, matcher.substring(1)));
+					}
+
+					break;
+				case '<':
+					if (secondChar == '=') {
+						predicates.add(new VersionPredicate(Type.LESSER_THAN_OR_EQUAL, matcher.substring(2)));
+					} else {
+						predicates.add(new VersionPredicate(Type.LESSER_THAN, matcher.substring(1)));
+					}
+
+					break;
+				case '=':
+					predicates.add(new VersionPredicate(Type.EQUALS, matcher.substring(1)));
+					break;
+				case '^':
+					predicates.add(new VersionPredicate(Type.SAME_MAJOR, matcher.substring(1)));
+					break;
+				case '~':
+					predicates.add(new VersionPredicate(Type.SAME_MAJOR_AND_MINOR, matcher.substring(1)));
+					break;
+				default: // string version
 					predicates.add(new VersionPredicate(Type.EQUALS, matcher));
-				}
-
-				break;
-			case '>':
-				if (secondChar == '=') {
-					predicates.add(new VersionPredicate(Type.GREATER_THAN_OR_EQUAL, matcher.substring(2)));
-				} else {
-					predicates.add(new VersionPredicate(Type.GREATER_THAN, matcher.substring(1)));
-				}
-
-				break;
-			case '<':
-				if (secondChar == '=') {
-					predicates.add(new VersionPredicate(Type.LESSER_THAN_OR_EQUAL, matcher.substring(2)));
-				} else {
-					predicates.add(new VersionPredicate(Type.LESSER_THAN, matcher.substring(1)));
-				}
-
-				break;
-			case '=':
-				predicates.add(new VersionPredicate(Type.EQUALS, matcher.substring(1)));
-				break;
-			case '^':
-				predicates.add(new VersionPredicate(Type.SAME_MAJOR, matcher.substring(1)));
-				break;
-			case '~':
-				predicates.add(new VersionPredicate(Type.SAME_MAJOR_AND_MINOR, matcher.substring(1)));
-				break;
-			default: // string version
-				predicates.add(new VersionPredicate(Type.EQUALS, matcher));
-				break;
+					break;
 			}
 		}
 

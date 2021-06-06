@@ -21,10 +21,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
-
 import org.jetbrains.annotations.Nullable;
 import org.quiltmc.loader.impl.QuiltLoaderImpl;
 

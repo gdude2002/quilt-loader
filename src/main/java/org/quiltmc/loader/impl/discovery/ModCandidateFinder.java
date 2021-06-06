@@ -16,10 +16,9 @@
 
 package org.quiltmc.loader.impl.discovery;
 
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
-
 import java.net.URL;
 import java.util.function.BiConsumer;
+import org.quiltmc.loader.impl.QuiltLoaderImpl;
 
 @FunctionalInterface
 public interface ModCandidateFinder {

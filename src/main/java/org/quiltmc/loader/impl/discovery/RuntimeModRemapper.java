@@ -16,25 +16,6 @@
 
 package org.quiltmc.loader.impl.discovery;
 
-import org.objectweb.asm.commons.Remapper;
-
-import net.fabricmc.accesswidener.AccessWidener;
-import net.fabricmc.accesswidener.AccessWidenerReader;
-import net.fabricmc.accesswidener.AccessWidenerRemapper;
-import net.fabricmc.accesswidener.AccessWidenerWriter;
-
-import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
-import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
-import org.quiltmc.loader.impl.util.FileSystemUtil;
-import org.quiltmc.loader.impl.util.SystemProperties;
-import org.quiltmc.loader.impl.util.UrlConversionException;
-import org.quiltmc.loader.impl.util.UrlUtil;
-import org.quiltmc.loader.impl.util.mappings.TinyRemapperMappingsHelper;
-import net.fabricmc.tinyremapper.InputTag;
-import net.fabricmc.tinyremapper.NonClassCopyMode;
-import net.fabricmc.tinyremapper.OutputConsumerPath;
-import net.fabricmc.tinyremapper.TinyRemapper;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -55,28 +36,53 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.fabricmc.accesswidener.AccessWidener;
+import net.fabricmc.accesswidener.AccessWidenerReader;
+import net.fabricmc.accesswidener.AccessWidenerRemapper;
+import net.fabricmc.accesswidener.AccessWidenerWriter;
+import net.fabricmc.tinyremapper.InputTag;
+import net.fabricmc.tinyremapper.NonClassCopyMode;
+import net.fabricmc.tinyremapper.OutputConsumerPath;
+import net.fabricmc.tinyremapper.TinyRemapper;
+import org.objectweb.asm.commons.Remapper;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
+import org.quiltmc.loader.impl.util.FileSystemUtil;
+import org.quiltmc.loader.impl.util.SystemProperties;
+import org.quiltmc.loader.impl.util.UrlConversionException;
+import org.quiltmc.loader.impl.util.UrlUtil;
+import org.quiltmc.loader.impl.util.mappings.TinyRemapperMappingsHelper;
 
 public final class RuntimeModRemapper {
 
 	public static Collection<ModCandidate> remap(Collection<ModCandidate> modCandidates, FileSystem fileSystem) {
-		List<ModCandidate> modsToRemap = modCandidates.stream()
-				.filter(ModCandidate::requiresRemap)
-				.collect(Collectors.toList());
+		List<ModCandidate> modsToRemap = modCandidates
+			.stream()
+			.filter(ModCandidate::requiresRemap)
+			.collect(Collectors.toList());
 
 		if (modsToRemap.isEmpty()) {
 			return modCandidates;
 		}
 
-		List<ModCandidate> modsToSkip = modCandidates.stream()
-				.filter(mc -> !mc.requiresRemap())
-				.collect(Collectors.toList());
+		List<ModCandidate> modsToSkip = modCandidates
+			.stream()
+			.filter(mc -> !mc.requiresRemap())
+			.collect(Collectors.toList());
 
 		QuiltLauncher launcher = QuiltLauncherBase.getLauncher();
 
-		TinyRemapper remapper = TinyRemapper.newRemapper()
-				.withMappings(TinyRemapperMappingsHelper.create(launcher.getMappingConfiguration().getMappings(), "intermediary", launcher.getTargetNamespace()))
-				.renameInvalidLocals(false)
-				.build();
+		TinyRemapper remapper = TinyRemapper
+			.newRemapper()
+			.withMappings(
+				TinyRemapperMappingsHelper.create(
+					launcher.getMappingConfiguration().getMappings(),
+					"intermediary",
+					launcher.getTargetNamespace()
+				)
+			)
+			.renameInvalidLocals(false)
+			.build();
 
 		try {
 			remapper.readClassPathAsync(getRemapClasspath().toArray(new Path[0]));
@@ -131,7 +137,8 @@ public final class RuntimeModRemapper {
 
 					try (FileSystemUtil.FileSystemDelegate jarFs = FileSystemUtil.getJarFileSystem(info.inputPath, false)) {
 						FileSystem fs = jarFs.get();
-						info.accessWidener = remapAccessWidener(Files.readAllBytes(fs.getPath(accessWidener)), remapper.getRemapper());
+						info.accessWidener =
+							remapAccessWidener(Files.readAllBytes(fs.getPath(accessWidener)), remapper.getRemapper());
 					}
 				}
 			}
@@ -154,18 +161,20 @@ public final class RuntimeModRemapper {
 
 				remappedMods.add(new ModCandidate(mod.getInfo(), UrlUtil.asUrl(info.outputPath), 0, false));
 			}
-
 		} catch (UrlConversionException | IOException e) {
 			remapper.finish();
 			throw new RuntimeException("Failed to remap mods", e);
 		}
 
-		return Stream.concat(remappedMods.stream(), modsToSkip.stream())
-				.collect(Collectors.toList());
+		return Stream.concat(remappedMods.stream(), modsToSkip.stream()).collect(Collectors.toList());
 	}
 
 	private static byte[] remapAccessWidener(byte[] input, Remapper remapper) {
-		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(input), StandardCharsets.UTF_8))) {
+		try (
+			BufferedReader bufferedReader = new BufferedReader(
+				new InputStreamReader(new ByteArrayInputStream(input), StandardCharsets.UTF_8)
+			)
+		) {
 			AccessWidener accessWidener = new AccessWidener();
 			AccessWidenerReader accessWidenerReader = new AccessWidenerReader(accessWidener);
 			accessWidenerReader.read(bufferedReader, "intermediary");
@@ -192,12 +201,11 @@ public final class RuntimeModRemapper {
 
 		String content = new String(Files.readAllBytes(Paths.get(remapClasspathFile)), StandardCharsets.UTF_8);
 
-		return Arrays.stream(content.split(File.pathSeparator))
-				.map(Paths::get)
-				.collect(Collectors.toList());
+		return Arrays.stream(content.split(File.pathSeparator)).map(Paths::get).collect(Collectors.toList());
 	}
 
 	private static class RemapInfo {
+
 		InputTag tag;
 		Path inputPath;
 		Path outputPath;

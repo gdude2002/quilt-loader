@@ -16,20 +16,20 @@
 
 package org.quiltmc.loader.impl.entrypoint;
 
-import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.tree.ClassNode;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.tree.ClassNode;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
 
 public class EntrypointTransformer {
+
 	public static String appletMainClass;
 
 	public final Logger logger = LogManager.getFormatterLogger("FabricLoader|EntrypointTransformer");
@@ -42,7 +42,9 @@ public class EntrypointTransformer {
 	}
 
 	ClassNode loadClass(QuiltLauncher launcher, String className) throws IOException {
-		byte[] data = patchedClasses.containsKey(className) ? patchedClasses.get(className) : launcher.getClassByteArray(className, true);
+		byte[] data = patchedClasses.containsKey(className)
+			? patchedClasses.get(className)
+			: launcher.getClassByteArray(className, true);
 		if (data != null) {
 			ClassReader reader = new ClassReader(data);
 			ClassNode node = new ClassNode();
@@ -72,8 +74,11 @@ public class EntrypointTransformer {
 		entrypointsLocated = true;
 		patchedClasses = new HashMap<>();
 
-		patches.forEach((e) -> e.process(launcher, this::addPatchedClass));
-		logger.debug("[EntrypointTransformer] Patched " + (patchedClasses.size() == 1 ? "1 class." : (patchedClasses.size() + " classes.")));
+		patches.forEach(e -> e.process(launcher, this::addPatchedClass));
+		logger.debug(
+			"[EntrypointTransformer] Patched " +
+			(patchedClasses.size() == 1 ? "1 class." : (patchedClasses.size() + " classes."))
+		);
 	}
 
 	/**

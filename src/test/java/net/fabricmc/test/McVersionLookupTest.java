@@ -26,11 +26,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
 import org.quiltmc.loader.impl.minecraft.McVersionLookup;
 import org.quiltmc.loader.impl.minecraft.McVersionLookup.McVersion;
 
 public final class McVersionLookupTest {
+
 	public static void main(String[] args) throws IOException {
 		if (args.length != 1) throw new RuntimeException("usage: <file/dir-to-try>");
 
@@ -38,16 +38,19 @@ public final class McVersionLookupTest {
 		List<String> invalid = new ArrayList<>();
 
 		if (Files.isDirectory(path)) {
-			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-				@Override
-				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					if (file.getFileName().toString().endsWith(".jar")) {
-						check(file, path.relativize(file).toString(), invalid);
-					}
+			Files.walkFileTree(
+				path,
+				new SimpleFileVisitor<Path>() {
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						if (file.getFileName().toString().endsWith(".jar")) {
+							check(file, path.relativize(file).toString(), invalid);
+						}
 
-					return FileVisitResult.CONTINUE;
+						return FileVisitResult.CONTINUE;
+					}
 				}
-			});
+			);
 		} else {
 			check(path, path.getFileName().toString(), invalid);
 		}
@@ -79,13 +82,13 @@ public final class McVersionLookupTest {
 	}
 
 	private static final Pattern pattern = Pattern.compile(
-			"(0|[1-9]\\d*)" // major
-			+ "\\.(0|[1-9]\\d*)" // minor
-			+ "(\\.(0|[1-9]\\d*))?" // patch
-			+ "(-(alpha|beta|rc)" // pre-release name (alpha = old mc alpha or snapshot, beta = old mc beta, rc = mc pre-release)
-			+ "\\.(0|[1-9]\\d*)" // alpha major or pre-release major
-			+ "(\\.(0|[1-9]\\d*))?" // alpha minor or pre-release minor
-			+ "(\\.([1-9]\\d*|[a-z]))?" // alpha patch or pre-release suffix
-			+ ")?"
+		"(0|[1-9]\\d*)" + // major
+		"\\.(0|[1-9]\\d*)" + // minor
+		"(\\.(0|[1-9]\\d*))?" + // patch
+		"(-(alpha|beta|rc)" + // pre-release name (alpha = old mc alpha or snapshot, beta = old mc beta, rc = mc pre-release)
+		"\\.(0|[1-9]\\d*)" + // alpha major or pre-release major
+		"(\\.(0|[1-9]\\d*))?" + // alpha minor or pre-release minor
+		"(\\.([1-9]\\d*|[a-z]))?" + // alpha patch or pre-release suffix
+		")?"
 	);
 }

@@ -44,5 +44,5 @@ public enum EnvType {
 	 * However, the server environment type has its libraries embedded compared to the
 	 * client.</p>
 	 */
-	SERVER
+	SERVER,
 }

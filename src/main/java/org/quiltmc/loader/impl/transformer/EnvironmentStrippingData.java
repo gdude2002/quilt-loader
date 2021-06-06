@@ -16,18 +16,18 @@
 
 package org.quiltmc.loader.impl.transformer;
 
+import java.util.Collection;
+import java.util.HashSet;
 import net.fabricmc.api.Environment;
 import net.fabricmc.api.EnvironmentInterface;
 import net.fabricmc.api.EnvironmentInterfaces;
 import org.objectweb.asm.*;
 
-import java.util.Collection;
-import java.util.HashSet;
-
 /**
  * Scans a class for Environment and EnvironmentInterface annotations to figure out what needs to be stripped.
  */
 public class EnvironmentStrippingData extends ClassVisitor {
+
 	private static final String ENVIRONMENT_DESCRIPTOR = Type.getDescriptor(Environment.class);
 	private static final String ENVIRONMENT_INTERFACE_DESCRIPTOR = Type.getDescriptor(EnvironmentInterface.class);
 	private static final String ENVIRONMENT_INTERFACES_DESCRIPTOR = Type.getDescriptor(EnvironmentInterfaces.class);
@@ -40,6 +40,7 @@ public class EnvironmentStrippingData extends ClassVisitor {
 	private final Collection<String> stripMethods = new HashSet<>();
 
 	private class EnvironmentAnnotationVisitor extends AnnotationVisitor {
+
 		private final Runnable onEnvMismatch;
 
 		private EnvironmentAnnotationVisitor(int api, Runnable onEnvMismatch) {
@@ -56,6 +57,7 @@ public class EnvironmentStrippingData extends ClassVisitor {
 	}
 
 	private class EnvironmentInterfaceAnnotationVisitor extends AnnotationVisitor {
+
 		private boolean envMismatch;
 		private Type itf;
 
@@ -160,6 +162,6 @@ public class EnvironmentStrippingData extends ClassVisitor {
 	}
 
 	public boolean isEmpty() {
-		return stripInterfaces.isEmpty() && stripFields.isEmpty() && stripMethods.isEmpty();
+		return (stripInterfaces.isEmpty() && stripFields.isEmpty() && stripMethods.isEmpty());
 	}
 }

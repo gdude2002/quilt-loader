@@ -16,28 +16,6 @@
 
 package org.quiltmc.loader.impl.launch;
 
-import net.fabricmc.api.EnvType;
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
-import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
-import org.quiltmc.loader.impl.entrypoint.minecraft.hooks.EntrypointUtils;
-import org.quiltmc.loader.impl.game.GameProvider;
-import org.quiltmc.loader.impl.game.MinecraftGameProvider;
-import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
-import org.quiltmc.loader.impl.launch.common.QuiltMixinBootstrap;
-import org.quiltmc.loader.impl.util.Arguments;
-import org.quiltmc.loader.impl.util.SystemProperties;
-import org.quiltmc.loader.impl.util.UrlConversionException;
-import org.quiltmc.loader.impl.util.UrlUtil;
-import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraft.launchwrapper.ITweaker;
-import net.minecraft.launchwrapper.Launch;
-import net.minecraft.launchwrapper.LaunchClassLoader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.spongepowered.asm.launch.MixinBootstrap;
-import org.spongepowered.asm.mixin.MixinEnvironment;
-import org.spongepowered.asm.mixin.transformer.Proxy;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,8 +30,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
+import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecraft.launchwrapper.ITweaker;
+import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.quiltmc.loader.impl.QuiltLoaderImpl;
+import org.quiltmc.loader.impl.entrypoint.minecraft.hooks.EntrypointUtils;
+import org.quiltmc.loader.impl.game.GameProvider;
+import org.quiltmc.loader.impl.game.MinecraftGameProvider;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
+import org.quiltmc.loader.impl.launch.common.QuiltMixinBootstrap;
+import org.quiltmc.loader.impl.util.Arguments;
+import org.quiltmc.loader.impl.util.SystemProperties;
+import org.quiltmc.loader.impl.util.UrlConversionException;
+import org.quiltmc.loader.impl.util.UrlUtil;
+import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.mixin.MixinEnvironment;
+import org.spongepowered.asm.mixin.transformer.Proxy;
 
 public abstract class QuiltTweaker extends QuiltLauncherBase implements ITweaker {
+
 	protected static Logger LOGGER = LogManager.getFormatterLogger("Quilt|Tweaker");
 	protected Arguments arguments;
 	private LaunchClassLoader launchClassLoader;
@@ -135,7 +135,13 @@ public abstract class QuiltTweaker extends QuiltLauncherBase implements ITweaker
 				}
 
 				Path obfuscated = jarFile.toPath();
-				Path remapped = QuiltLauncherBase.deobfuscate(provider.getGameId(), provider.getNormalizedGameVersion(), provider.getLaunchDirectory(), obfuscated, this);
+				Path remapped = QuiltLauncherBase.deobfuscate(
+					provider.getGameId(),
+					provider.getNormalizedGameVersion(),
+					provider.getLaunchDirectory(),
+					obfuscated,
+					this
+				);
 				if (remapped != obfuscated) {
 					preloadRemappedJar(remapped);
 				}
@@ -151,7 +157,9 @@ public abstract class QuiltTweaker extends QuiltLauncherBase implements ITweaker
 		// Setup Mixin environment
 		MixinBootstrap.init();
 		QuiltMixinBootstrap.init(getEnvironmentType(), QuiltLoaderImpl.INSTANCE);
-		MixinEnvironment.getDefaultEnvironment().setSide(getEnvironmentType() == EnvType.CLIENT ? MixinEnvironment.Side.CLIENT : MixinEnvironment.Side.SERVER);
+		MixinEnvironment
+			.getDefaultEnvironment()
+			.setSide(getEnvironmentType() == EnvType.CLIENT ? MixinEnvironment.Side.CLIENT : MixinEnvironment.Side.SERVER);
 
 		EntrypointUtils.invoke("preLaunch", PreLaunchEntrypoint.class, PreLaunchEntrypoint::onPreLaunch);
 	}
@@ -225,8 +233,10 @@ public abstract class QuiltTweaker extends QuiltLauncherBase implements ITweaker
 			return;
 		}
 
-		try (FileInputStream jarFileStream = new FileInputStream(remappedJarFile.toFile());
-				JarInputStream jarStream = new JarInputStream(jarFileStream)) {
+		try (
+			FileInputStream jarFileStream = new FileInputStream(remappedJarFile.toFile());
+			JarInputStream jarStream = new JarInputStream(jarFileStream)
+		) {
 			JarEntry entry;
 
 			while ((entry = jarStream.getNextJarEntry()) != null) {

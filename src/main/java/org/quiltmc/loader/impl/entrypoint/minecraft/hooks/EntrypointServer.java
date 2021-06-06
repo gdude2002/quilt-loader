@@ -16,13 +16,13 @@
 
 package org.quiltmc.loader.impl.entrypoint.minecraft.hooks;
 
+import java.io.File;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.ModInitializer;
 import org.quiltmc.loader.impl.QuiltLoaderImpl;
 
-import java.io.File;
-
 public final class EntrypointServer {
+
 	public static void start(File runDir, Object gameInstance) {
 		if (runDir == null) {
 			runDir = new File(".");
@@ -30,6 +30,10 @@ public final class EntrypointServer {
 
 		QuiltLoaderImpl.INSTANCE.prepareModInit(runDir.toPath(), gameInstance);
 		EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
-		EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
+		EntrypointUtils.invoke(
+			"server",
+			DedicatedServerModInitializer.class,
+			DedicatedServerModInitializer::onInitializeServer
+		);
 	}
 }

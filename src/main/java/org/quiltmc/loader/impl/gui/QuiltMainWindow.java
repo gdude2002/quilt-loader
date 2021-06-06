@@ -39,7 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -59,13 +58,13 @@ import javax.swing.WindowConstants;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
-
+import org.quiltmc.loader.impl.gui.QuiltStatusTree.FabricTreeWarningLevel;
 import org.quiltmc.loader.impl.gui.QuiltStatusTree.QuiltStatusButton;
 import org.quiltmc.loader.impl.gui.QuiltStatusTree.QuiltStatusNode;
 import org.quiltmc.loader.impl.gui.QuiltStatusTree.QuiltStatusTab;
-import org.quiltmc.loader.impl.gui.QuiltStatusTree.FabricTreeWarningLevel;
 
 class QuiltMainWindow {
+
 	static Icon missingIcon = null;
 
 	static void open(QuiltStatusTree tree, boolean shouldWait) throws Exception {
@@ -80,9 +79,11 @@ class QuiltMainWindow {
 	private static void open0(QuiltStatusTree tree, boolean shouldWait) throws Exception {
 		CountDownLatch guiTerminatedLatch = new CountDownLatch(1);
 
-		SwingUtilities.invokeAndWait(() -> {
-			createUi(guiTerminatedLatch, tree);
-		});
+		SwingUtilities.invokeAndWait(
+			() -> {
+				createUi(guiTerminatedLatch, tree);
+			}
+		);
 
 		if (shouldWait) {
 			guiTerminatedLatch.await();
@@ -106,12 +107,14 @@ class QuiltMainWindow {
 		window.setMinimumSize(new Dimension(640, 480));
 		window.setLocationByPlatform(true);
 		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		window.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				onCloseLatch.countDown();
+		window.addWindowListener(
+			new WindowAdapter() {
+				@Override
+				public void windowClosed(WindowEvent e) {
+					onCloseLatch.countDown();
+				}
 			}
-		});
+		);
 
 		Container contentPane = window.getContentPane();
 
@@ -149,17 +152,19 @@ class QuiltMainWindow {
 			for (QuiltStatusButton button : tree.buttons) {
 				JButton btn = new JButton(button.text);
 				buttons.add(btn);
-				btn.addActionListener(e -> {
-					btn.setEnabled(false);
+				btn.addActionListener(
+					e -> {
+						btn.setEnabled(false);
 
-					if (button.shouldClose) {
-						window.dispose();
-					}
+						if (button.shouldClose) {
+							window.dispose();
+						}
 
-					if (button.shouldContinue) {
-						onCloseLatch.countDown();
+						if (button.shouldContinue) {
+							onCloseLatch.countDown();
+						}
 					}
-				});
+				);
 			}
 		}
 
@@ -167,8 +172,11 @@ class QuiltMainWindow {
 		window.requestFocus();
 	}
 
-	private static JPanel createTreePanel(QuiltStatusNode rootNode, FabricTreeWarningLevel minimumWarningLevel,
-										  IconSet iconSet) {
+	private static JPanel createTreePanel(
+		QuiltStatusNode rootNode,
+		FabricTreeWarningLevel minimumWarningLevel,
+		IconSet iconSet
+	) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
@@ -214,6 +222,7 @@ class QuiltMainWindow {
 	}
 
 	static final class IconSet {
+
 		/** Map of IconInfo -> Integer Size -> Real Icon. */
 		private final Map<IconInfo, Map<Integer, Icon>> icons = new HashMap<>();
 
@@ -300,6 +309,7 @@ class QuiltMainWindow {
 	}
 
 	static final class IconInfo {
+
 		public final String mainPath;
 		public final String[] decor;
 		private final int hash;
@@ -375,11 +385,12 @@ class QuiltMainWindow {
 			}
 
 			IconInfo other = (IconInfo) obj;
-			return mainPath.equals(other.mainPath) && Arrays.equals(decor, other.decor);
+			return (mainPath.equals(other.mainPath) && Arrays.equals(decor, other.decor));
 		}
 	}
 
 	private static final class CustomTreeCellRenderer extends DefaultTreeCellRenderer {
+
 		private static final long serialVersionUID = -5621219150752332739L;
 
 		private final IconSet iconSet;
@@ -389,9 +400,15 @@ class QuiltMainWindow {
 		}
 
 		@Override
-		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
-			boolean leaf, int row, boolean hasFocus) {
-
+		public Component getTreeCellRendererComponent(
+			JTree tree,
+			Object value,
+			boolean sel,
+			boolean expanded,
+			boolean leaf,
+			int row,
+			boolean hasFocus
+		) {
 			super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
 			if (value instanceof CustomTreeNode) {
@@ -403,10 +420,10 @@ class QuiltMainWindow {
 				} else {
 					if (c.node.details.contains("\n")) {
 						// It's a bit odd but it's easier than creating a custom tooltip
-						String replaced = c.node.details//
-							.replace("&", "&amp;")//
-							.replace("<", "&lt;")//
-							.replace(">", "&gt;")//
+						String replaced = c.node.details //
+							.replace("&", "&amp;") //
+							.replace("<", "&lt;") //
+							.replace(">", "&gt;") //
 							.replace("\n", "<br>");
 						setToolTipText("<html>" + replaced + "</html>");
 					} else {
@@ -420,6 +437,7 @@ class QuiltMainWindow {
 	}
 
 	static class CustomTreeNode implements TreeNode {
+
 		public final TreeNode parent;
 		public final QuiltStatusNode node;
 		public final List<CustomTreeNode> displayedChildren = new ArrayList<>();

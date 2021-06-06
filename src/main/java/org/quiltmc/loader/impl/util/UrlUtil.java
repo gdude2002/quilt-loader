@@ -22,9 +22,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public final class UrlUtil {
-	private UrlUtil() {
 
-	}
+	private UrlUtil() {}
 
 	public static URL getSource(String filename, URL resourceURL) throws UrlConversionException {
 		URL codeSourceURL;
@@ -37,9 +36,17 @@ public final class UrlUtil {
 				String path = resourceURL.getPath();
 
 				if (path.endsWith(filename)) {
-					codeSourceURL = new URL(resourceURL.getProtocol(), resourceURL.getHost(), resourceURL.getPort(), path.substring(0, path.length() - filename.length()));
+					codeSourceURL =
+						new URL(
+							resourceURL.getProtocol(),
+							resourceURL.getHost(),
+							resourceURL.getPort(),
+							path.substring(0, path.length() - filename.length())
+						);
 				} else {
-					throw new UrlConversionException("Could not figure out code source for file '" + filename + "' and URL '" + resourceURL + "'!");
+					throw new UrlConversionException(
+						"Could not figure out code source for file '" + filename + "' and URL '" + resourceURL + "'!"
+					);
 				}
 			}
 		} catch (Exception e) {

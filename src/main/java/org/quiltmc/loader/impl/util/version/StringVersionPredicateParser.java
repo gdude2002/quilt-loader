@@ -17,17 +17,17 @@
 package org.quiltmc.loader.impl.util.version;
 
 import java.util.function.Predicate;
-
 import net.fabricmc.loader.api.VersionParsingException;
 
 public final class StringVersionPredicateParser {
+
 	public static Predicate<StringVersion> create(String text) throws VersionParsingException {
 		final String compared = text.trim();
 
 		if (compared.equals("*")) {
-			return (t) -> true;
+			return t -> true;
 		} else {
-			return (t) -> compared.equals(t.getFriendlyString());
+			return t -> compared.equals(t.getFriendlyString());
 		}
 	}
 }

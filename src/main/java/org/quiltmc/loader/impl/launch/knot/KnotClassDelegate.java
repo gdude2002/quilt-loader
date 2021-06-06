@@ -16,15 +16,6 @@
 
 package org.quiltmc.loader.impl.launch.knot;
 
-import net.fabricmc.api.EnvType;
-import org.quiltmc.loader.impl.game.GameProvider;
-import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
-import org.quiltmc.loader.impl.transformer.QuiltTransformer;
-import org.quiltmc.loader.impl.util.FileSystemUtil;
-import org.quiltmc.loader.impl.util.UrlConversionException;
-import org.quiltmc.loader.impl.util.UrlUtil;
-import org.spongepowered.asm.mixin.transformer.QuiltMixinTransformerProxy;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,9 +30,19 @@ import java.security.cert.Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Manifest;
+import net.fabricmc.api.EnvType;
+import org.quiltmc.loader.impl.game.GameProvider;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
+import org.quiltmc.loader.impl.transformer.QuiltTransformer;
+import org.quiltmc.loader.impl.util.FileSystemUtil;
+import org.quiltmc.loader.impl.util.UrlConversionException;
+import org.quiltmc.loader.impl.util.UrlUtil;
+import org.spongepowered.asm.mixin.transformer.QuiltMixinTransformerProxy;
 
 class KnotClassDelegate {
+
 	static class Metadata {
+
 		static final Metadata EMPTY = new Metadata(null, null);
 
 		final Manifest manifest;
@@ -95,53 +96,55 @@ class KnotClassDelegate {
 			}
 
 			if (codeSourceURL != null) {
-				return metadataCache.computeIfAbsent(codeSourceURL.toString(), (codeSourceStr) -> {
-					Manifest manifest = null;
-					CodeSource codeSource = null;
-					Certificate[] certificates = null;
-					URL fCodeSourceUrl = null;
+				return metadataCache.computeIfAbsent(
+					codeSourceURL.toString(),
+					codeSourceStr -> {
+						Manifest manifest = null;
+						CodeSource codeSource = null;
+						Certificate[] certificates = null;
+						URL fCodeSourceUrl = null;
 
-					try {
-						fCodeSourceUrl = new URL(codeSourceStr);
-						Path path = UrlUtil.asPath(fCodeSourceUrl);
+						try {
+							fCodeSourceUrl = new URL(codeSourceStr);
+							Path path = UrlUtil.asPath(fCodeSourceUrl);
 
-						if (Files.isRegularFile(path)) {
-							URLConnection connection = new URL("jar:" + codeSourceStr + "!/").openConnection();
-							if (connection instanceof JarURLConnection) {
-								manifest = ((JarURLConnection) connection).getManifest();
-								certificates = ((JarURLConnection) connection).getCertificates();
-							}
+							if (Files.isRegularFile(path)) {
+								URLConnection connection = new URL("jar:" + codeSourceStr + "!/").openConnection();
+								if (connection instanceof JarURLConnection) {
+									manifest = ((JarURLConnection) connection).getManifest();
+									certificates = ((JarURLConnection) connection).getCertificates();
+								}
 
-							if (manifest == null) {
-								try (FileSystemUtil.FileSystemDelegate jarFs = FileSystemUtil.getJarFileSystem(path, false)) {
-									Path manifestPath = jarFs.get().getPath("META-INF/MANIFEST.MF");
-									if (Files.exists(manifestPath)) {
-										try (InputStream stream = Files.newInputStream(manifestPath)) {
-											manifest = new Manifest(stream);
-
-											// TODO
-											/* JarEntry codeEntry = codeSourceJar.getJarEntry(filename);
+								if (manifest == null) {
+									try (FileSystemUtil.FileSystemDelegate jarFs = FileSystemUtil.getJarFileSystem(path, false)) {
+										Path manifestPath = jarFs.get().getPath("META-INF/MANIFEST.MF");
+										if (Files.exists(manifestPath)) {
+											try (InputStream stream = Files.newInputStream(manifestPath)) {
+												manifest = new Manifest(stream);
+												// TODO
+												/* JarEntry codeEntry = codeSourceJar.getJarEntry(filename);
 											if (codeEntry != null) {
 												codeSource = new CodeSource(codeSourceURL, codeEntry.getCodeSigners());
 											} */
+											}
 										}
 									}
 								}
 							}
+						} catch (IOException | FileSystemNotFoundException | UrlConversionException e) {
+							if (QuiltLauncherBase.getLauncher().isDevelopment()) {
+								System.err.println("Failed to load manifest: " + e);
+								e.printStackTrace();
+							}
 						}
-					} catch (IOException | FileSystemNotFoundException | UrlConversionException e) {
-						if (QuiltLauncherBase.getLauncher().isDevelopment()) {
-							System.err.println("Failed to load manifest: " + e);
-							e.printStackTrace();
+
+						if (codeSource == null) {
+							codeSource = new CodeSource(fCodeSourceUrl, certificates);
 						}
-					}
 
-					if (codeSource == null) {
-						codeSource = new CodeSource(fCodeSourceUrl, certificates);
+						return new Metadata(manifest, codeSource);
 					}
-
-					return new Metadata(manifest, codeSource);
-				});
+				);
 			}
 		}
 
@@ -191,7 +194,9 @@ class KnotClassDelegate {
 	private static boolean canTransformClass(String name) {
 		name = name.replace('/', '.');
 		// Blocking Fabric Loader classes is no longer necessary here as they don't exist on the modding class loader
-		return /* !"net.fabricmc.api.EnvType".equals(name) && !name.startsWith("net.fabricmc.loader.") && */ !name.startsWith("org.apache.logging.log4j");
+		return /* !"net.fabricmc.api.EnvType".equals(name) && !name.startsWith("net.fabricmc.loader.") && */!name.startsWith(
+			"org.apache.logging.log4j"
+		);
 	}
 
 	String getClassFileName(String name) {

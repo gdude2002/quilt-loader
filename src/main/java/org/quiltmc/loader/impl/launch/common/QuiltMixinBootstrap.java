@@ -16,26 +16,24 @@
 
 package org.quiltmc.loader.impl.launch.common;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import net.fabricmc.api.EnvType;
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
 import net.fabricmc.loader.api.ModContainer;
-import org.quiltmc.loader.impl.metadata.LoaderModMetadata;
-import org.quiltmc.loader.impl.util.mappings.MixinIntermediaryDevRemapper;
 import net.fabricmc.mapping.tree.TinyTree;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.quiltmc.loader.impl.QuiltLoaderImpl;
+import org.quiltmc.loader.impl.metadata.LoaderModMetadata;
+import org.quiltmc.loader.impl.util.mappings.MixinIntermediaryDevRemapper;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 public final class QuiltMixinBootstrap {
-	private QuiltMixinBootstrap() {
 
-	}
+	private QuiltMixinBootstrap() {}
 
 	protected static Logger LOGGER = LogManager.getFormatterLogger("Quilt|MixinBootstrap");
 	private static boolean initialized = false;
@@ -45,10 +43,12 @@ public final class QuiltMixinBootstrap {
 	}
 
 	static Set<String> getMixinConfigs(QuiltLoaderImpl loader, EnvType type) {
-		return loader.getAllMods().stream()
+		return loader
+			.getAllMods()
+			.stream()
 			.map(ModContainer::getMetadata)
-			.filter((m) -> m instanceof LoaderModMetadata)
-			.flatMap((m) -> ((LoaderModMetadata) m).getMixinConfigs(type).stream())
+			.filter(m -> m instanceof LoaderModMetadata)
+			.flatMap(m -> ((LoaderModMetadata) m).getMixinConfigs(type).stream())
 			.filter(s -> s != null && !s.isEmpty())
 			.collect(Collectors.toSet());
 	}
@@ -68,7 +68,11 @@ public final class QuiltMixinBootstrap {
 					System.setProperty("mixin.env.remapRefMap", "true");
 
 					try {
-						MixinIntermediaryDevRemapper remapper = new MixinIntermediaryDevRemapper(mappings, "intermediary", mappingConfiguration.getTargetNamespace());
+						MixinIntermediaryDevRemapper remapper = new MixinIntermediaryDevRemapper(
+							mappings,
+							"intermediary",
+							mappingConfiguration.getTargetNamespace()
+						);
 						MixinEnvironment.getDefaultEnvironment().getRemappers().add(remapper);
 						LOGGER.info("Loaded Quilt development mappings for mixin remapper!");
 					} catch (Exception e) {

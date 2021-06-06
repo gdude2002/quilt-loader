@@ -19,6 +19,7 @@ package org.quiltmc.loader.impl.launch;
 import net.fabricmc.api.EnvType;
 
 public final class QuiltClientTweaker extends QuiltTweaker {
+
 	@Override
 	public EnvType getEnvironmentType() {
 		return EnvType.CLIENT;

@@ -19,6 +19,7 @@ package org.quiltmc.loader.impl.language;
 @SuppressWarnings("serial")
 @Deprecated
 public class LanguageAdapterException extends Exception {
+
 	public LanguageAdapterException(String s) {
 		super(s);
 	}

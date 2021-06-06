@@ -19,6 +19,7 @@ package org.quiltmc.loader.impl.metadata;
 import org.jetbrains.annotations.Nullable;
 
 final class ParseWarning {
+
 	private final String location;
 	private final String key;
 	private final String reason;

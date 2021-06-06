@@ -16,15 +16,15 @@
 
 package org.quiltmc.loader.impl.util.mappings;
 
+import java.util.*;
 import net.fabricmc.mapping.tree.ClassDef;
 import net.fabricmc.mapping.tree.Descriptored;
 import net.fabricmc.mapping.tree.TinyTree;
 import net.fabricmc.mapping.util.MixinRemapper;
 import org.spongepowered.asm.mixin.transformer.ClassInfo;
 
-import java.util.*;
-
 public class MixinIntermediaryDevRemapper extends MixinRemapper {
+
 	private static final String ambiguousName = "<ambiguous>"; // dummy value for ambiguous mappings - needs querying with additional owner and/or desc info
 
 	private final Set<String> allPossibleClassNames = new HashSet<>();
@@ -35,7 +35,6 @@ public class MixinIntermediaryDevRemapper extends MixinRemapper {
 
 	public MixinIntermediaryDevRemapper(TinyTree mappings, String from, String to) {
 		super(mappings, from, to);
-
 		for (ClassDef classDef : mappings.getClasses()) {
 			allPossibleClassNames.add(classDef.getName(from));
 			allPossibleClassNames.add(classDef.getName(to));
@@ -45,7 +44,13 @@ public class MixinIntermediaryDevRemapper extends MixinRemapper {
 		}
 	}
 
-	private <T extends Descriptored> void putMemberInLookup(String from, String to, Collection<T> descriptored, Map<String, String> nameMap, Map<String, String> nameDescMap) {
+	private <T extends Descriptored> void putMemberInLookup(
+		String from,
+		String to,
+		Collection<T> descriptored,
+		Map<String, String> nameMap,
+		Map<String, String> nameDescMap
+	) {
 		for (T field : descriptored) {
 			String nameFrom = field.getName(from);
 			String descFrom = field.getDescriptor(from);
@@ -57,7 +62,7 @@ public class MixinIntermediaryDevRemapper extends MixinRemapper {
 				nameDescMap.put(nameFrom, ambiguousName);
 			}
 
-			String key = getNameDescKey(nameFrom,descFrom);
+			String key = getNameDescKey(nameFrom, descFrom);
 			prev = nameDescMap.putIfAbsent(key, nameTo);
 
 			if (prev != null && prev != ambiguousName && !prev.equals(nameTo)) {
@@ -67,7 +72,7 @@ public class MixinIntermediaryDevRemapper extends MixinRemapper {
 	}
 
 	private void throwAmbiguousLookup(String type, String name, String desc) {
-		throw new RuntimeException("Ambiguous Mixin: " + type + " lookup " + name + " " + desc+" is not unique");
+		throw new RuntimeException("Ambiguous Mixin: " + type + " lookup " + name + " " + desc + " is not unique");
 	}
 
 	private String mapMethodNameInner(String owner, String name, String desc) {
@@ -215,6 +220,6 @@ public class MixinIntermediaryDevRemapper extends MixinRemapper {
 	}
 
 	private static String getNameDescKey(String name, String descriptor) {
-		return name+ ";;" + descriptor;
+		return name + ";;" + descriptor;
 	}
 }

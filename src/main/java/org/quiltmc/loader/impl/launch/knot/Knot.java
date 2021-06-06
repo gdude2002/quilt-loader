@@ -16,9 +16,16 @@
 
 package org.quiltmc.loader.impl.launch.knot;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Collectors;
 import net.fabricmc.api.EnvType;
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
+import org.quiltmc.loader.impl.QuiltLoaderImpl;
 import org.quiltmc.loader.impl.entrypoint.minecraft.hooks.EntrypointUtils;
 import org.quiltmc.loader.impl.game.GameProvider;
 import org.quiltmc.loader.impl.game.GameProviders;
@@ -29,15 +36,8 @@ import org.quiltmc.loader.impl.util.UrlConversionException;
 import org.quiltmc.loader.impl.util.UrlUtil;
 import org.spongepowered.asm.launch.MixinBootstrap;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
-
 public final class Knot extends QuiltLauncherBase {
+
 	protected Map<String, Object> properties = new HashMap<>();
 
 	private KnotClassLoaderInterface classLoader;
@@ -62,14 +62,14 @@ public final class Knot extends QuiltLauncherBase {
 			}
 
 			switch (side.toLowerCase(Locale.ROOT)) {
-			case "client":
-				envType = EnvType.CLIENT;
-				break;
-			case "server":
-				envType = EnvType.SERVER;
-				break;
-			default:
-				throw new RuntimeException("Invalid side provided: must be \"client\" or \"server\"!");
+				case "client":
+					envType = EnvType.CLIENT;
+					break;
+				case "server":
+					envType = EnvType.SERVER;
+					break;
+				default:
+					throw new RuntimeException("Invalid side provided: must be \"client\" or \"server\"!");
 			}
 		}
 
@@ -100,18 +100,24 @@ public final class Knot extends QuiltLauncherBase {
 
 		// Setup classloader
 		// TODO: Provide KnotCompatibilityClassLoader in non-exclusive-Fabric pre-1.13 environments?
-		boolean useCompatibility = provider.requiresUrlClassLoader() || Boolean.parseBoolean(System.getProperty("fabric.loader.useCompatibilityClassLoader", "false"));
-		classLoader = useCompatibility ? new KnotCompatibilityClassLoader(isDevelopment(), envType, provider) : new KnotClassLoader(isDevelopment(), envType, provider);
+		boolean useCompatibility =
+			provider.requiresUrlClassLoader() ||
+			Boolean.parseBoolean(System.getProperty("fabric.loader.useCompatibilityClassLoader", "false"));
+		classLoader =
+			useCompatibility
+				? new KnotCompatibilityClassLoader(isDevelopment(), envType, provider)
+				: new KnotClassLoader(isDevelopment(), envType, provider);
 		ClassLoader cl = (ClassLoader) classLoader;
 
 		if (provider.isObfuscated()) {
 			for (Path path : provider.getGameContextJars()) {
 				QuiltLauncherBase.deobfuscate(
-						provider.getGameId(), provider.getNormalizedGameVersion(),
-						provider.getLaunchDirectory(),
-						path,
-						this
-						);
+					provider.getGameId(),
+					provider.getNormalizedGameVersion(),
+					provider.getLaunchDirectory(),
+					path,
+					this
+				);
 			}
 		}
 
@@ -139,7 +145,7 @@ public final class Knot extends QuiltLauncherBase {
 	}
 
 	public void launch(ClassLoader cl) {
-		if(this.provider == null) {
+		if (this.provider == null) {
 			throw new IllegalStateException("Game provider was not initialized! (Knot#init(String[]))");
 		}
 		provider.launch(cl);
@@ -155,26 +161,37 @@ public final class Knot extends QuiltLauncherBase {
 	public Collection<URL> getLoadTimeDependencies() {
 		String cmdLineClasspath = System.getProperty("java.class.path");
 
-		return Arrays.stream(cmdLineClasspath.split(File.pathSeparator)).filter((s) -> {
-			if (s.equals("*") || s.endsWith(File.separator + "*")) {
-				System.err.println("WARNING: Knot does not support wildcard classpath entries: " + s + " - the game may not load properly!");
-				return false;
-			} else {
-				return true;
-			}
-		}).map((s) -> {
-			File file = new File(s);
-			if (!file.equals(gameJarFile)) {
-				try {
-					return (UrlUtil.asUrl(file));
-				} catch (UrlConversionException e) {
-					LOGGER.debug(e);
-					return null;
+		return Arrays
+			.stream(cmdLineClasspath.split(File.pathSeparator))
+			.filter(
+				s -> {
+					if (s.equals("*") || s.endsWith(File.separator + "*")) {
+						System.err.println(
+							"WARNING: Knot does not support wildcard classpath entries: " + s + " - the game may not load properly!"
+						);
+						return false;
+					} else {
+						return true;
+					}
 				}
-			} else {
-				return null;
-			}
-		}).filter(Objects::nonNull).collect(Collectors.toSet());
+			)
+			.map(
+				s -> {
+					File file = new File(s);
+					if (!file.equals(gameJarFile)) {
+						try {
+							return (UrlUtil.asUrl(file));
+						} catch (UrlConversionException e) {
+							LOGGER.debug(e);
+							return null;
+						}
+					} else {
+						return null;
+					}
+				}
+			)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toSet());
 	}
 
 	@Override

@@ -16,16 +16,15 @@
 
 package org.quiltmc.loader.impl.entrypoint.minecraft;
 
-import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
-import org.quiltmc.loader.impl.util.UrlConversionException;
-import org.quiltmc.loader.impl.util.UrlUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
+import org.quiltmc.loader.impl.util.UrlConversionException;
+import org.quiltmc.loader.impl.util.UrlUtil;
 
 /**
  * Wrapper class replacing pre-1.3 FML's ModClassLoader (which relies on
@@ -33,6 +32,7 @@ import java.util.Enumeration;
  * with an implementation effectively wrapping Knot.
  */
 public class ModClassLoader_125_FML extends URLClassLoader {
+
 	private URL[] localUrls;
 
 	public ModClassLoader_125_FML() {

@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.TreeMap;
-
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.api.metadata.ContactInformation;
@@ -36,6 +35,7 @@ import net.fabricmc.loader.api.metadata.Person;
 import org.quiltmc.loader.impl.util.version.VersionDeserializer;
 
 public final class BuiltinModMetadata extends AbstractModMetadata {
+
 	private final String id;
 	private final Version version;
 	private final ModEnvironment environment;
@@ -47,13 +47,18 @@ public final class BuiltinModMetadata extends AbstractModMetadata {
 	private final Collection<String> license;
 	private final NavigableMap<Integer, String> icons;
 
-	private BuiltinModMetadata(String id, Version version,
-			ModEnvironment environment,
-			String name, String description,
-			Collection<Person> authors, Collection<Person> contributors,
-			ContactInformation contact,
-			Collection<String> license,
-			NavigableMap<Integer, String> icons) {
+	private BuiltinModMetadata(
+		String id,
+		Version version,
+		ModEnvironment environment,
+		String name,
+		String description,
+		Collection<Person> authors,
+		Collection<Person> contributors,
+		ContactInformation contact,
+		Collection<String> license,
+		NavigableMap<Integer, String> icons
+	) {
 		this.id = id;
 		this.version = version;
 		this.environment = environment;
@@ -133,23 +138,47 @@ public final class BuiltinModMetadata extends AbstractModMetadata {
 	}
 
 	@Override
-	public Collection<ModDependency> getDepends() { return Collections.emptyList(); }
+	public Collection<ModDependency> getDepends() {
+		return Collections.emptyList();
+	}
+
 	@Override
-	public Collection<ModDependency> getRecommends() { return Collections.emptyList(); }
+	public Collection<ModDependency> getRecommends() {
+		return Collections.emptyList();
+	}
+
 	@Override
-	public Collection<ModDependency> getSuggests() { return Collections.emptyList(); }
+	public Collection<ModDependency> getSuggests() {
+		return Collections.emptyList();
+	}
+
 	@Override
-	public Collection<ModDependency> getConflicts() { return Collections.emptyList(); }
+	public Collection<ModDependency> getConflicts() {
+		return Collections.emptyList();
+	}
+
 	@Override
-	public Collection<ModDependency> getBreaks() { return Collections.emptyList(); }
+	public Collection<ModDependency> getBreaks() {
+		return Collections.emptyList();
+	}
+
 	@Override
-	public boolean containsCustomValue(String key) { return false; }
+	public boolean containsCustomValue(String key) {
+		return false;
+	}
+
 	@Override
-	public CustomValue getCustomValue(String key) { return null; }
+	public CustomValue getCustomValue(String key) {
+		return null;
+	}
+
 	@Override
-	public Map<String, CustomValue> getCustomValues() { return Collections.emptyMap(); }
+	public Map<String, CustomValue> getCustomValues() {
+		return Collections.emptyMap();
+	}
 
 	public static class Builder {
+
 		private final String id;
 		private final Version version;
 		private ModEnvironment environment = ModEnvironment.UNIVERSAL;
@@ -212,7 +241,18 @@ public final class BuiltinModMetadata extends AbstractModMetadata {
 		}
 
 		public ModMetadata build() {
-			return new BuiltinModMetadata(id, version, environment, name, description, authors, contributors, contact, license, icons);
+			return new BuiltinModMetadata(
+				id,
+				version,
+				environment,
+				name,
+				description,
+				authors,
+				contributors,
+				contact,
+				license,
+				icons
+			);
 		}
 
 		private static Person createPerson(String name, Map<String, String> contactMap) {
@@ -227,7 +267,9 @@ public final class BuiltinModMetadata extends AbstractModMetadata {
 					return contact;
 				}
 
-				private final ContactInformation contact = contactMap.isEmpty() ? ContactInformation.EMPTY : new MapBackedContactInformation(contactMap);
+				private final ContactInformation contact = contactMap.isEmpty()
+					? ContactInformation.EMPTY
+					: new MapBackedContactInformation(contactMap);
 			};
 		}
 	}

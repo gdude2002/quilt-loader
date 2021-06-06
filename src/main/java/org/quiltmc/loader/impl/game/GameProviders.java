@@ -20,7 +20,8 @@ import java.util.Collections;
 import java.util.List;
 
 public final class GameProviders {
-	private GameProviders() { }
+
+	private GameProviders() {}
 
 	public static List<GameProvider> create() {
 		return Collections.singletonList(new MinecraftGameProvider());

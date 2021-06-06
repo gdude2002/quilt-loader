@@ -25,13 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import org.quiltmc.loader.impl.discovery.ModCandidate;
 import org.quiltmc.loader.impl.discovery.ModCandidateSet;
 import org.quiltmc.loader.impl.discovery.ModResolver;
@@ -40,18 +38,21 @@ import org.quiltmc.loader.impl.metadata.ModMetadataParser;
 import org.quiltmc.loader.impl.metadata.NestedJarEntry;
 
 final class ModResolvingTests {
+
 	private static final Logger LOGGER = LogManager.getLogger();
 
 	private static Path testLocation;
 
 	@BeforeAll
 	private static void setupPaths() {
-		testLocation = new File(System.getProperty("user.dir")).toPath()//
-			.resolve("src")//
-			.resolve("test")//
-			.resolve("resources")//
-			.resolve("testing")//
-			.resolve("resolving");
+		testLocation =
+			new File(System.getProperty("user.dir"))
+				.toPath() //
+				.resolve("src") //
+				.resolve("test") //
+				.resolve("resources") //
+				.resolve("testing") //
+				.resolve("resolving");
 	}
 
 	@Test
@@ -110,14 +111,14 @@ final class ModResolvingTests {
 	}
 
 	private static Map<String, ModCandidate> resolveModSet(String type, String subpath) throws Exception {
-
 		ModResolver resolver = new ModResolver();
 		Map<String, ModCandidateSet> candidateMap = new HashMap<>();
 
 		Path modRoot = testLocation.resolve(type).resolve(subpath);
 
-		List<Path> subFolders = Files.list(modRoot)//
-			.filter(p -> p.getFileName().toString().endsWith(".jar") && Files.isDirectory(p))//
+		List<Path> subFolders = Files
+			.list(modRoot) //
+			.filter(p -> p.getFileName().toString().endsWith(".jar") && Files.isDirectory(p)) //
 			.collect(Collectors.toCollection(ArrayList::new));
 
 		List<Path> loadFrom = new ArrayList<>();
@@ -129,7 +130,6 @@ final class ModResolvingTests {
 			subFolders.clear();
 
 			for (Path modPath : loadFrom) {
-
 				URL url = modPath.toUri().toURL();
 				LoaderModMetadata[] metas = { ModMetadataParser.parseMetadata(LOGGER, modPath.resolve("fabric.mod.json")) };
 

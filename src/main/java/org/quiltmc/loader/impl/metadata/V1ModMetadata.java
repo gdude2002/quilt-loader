@@ -23,10 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.SortedMap;
-
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
-
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.metadata.ContactInformation;
@@ -34,8 +30,11 @@ import net.fabricmc.loader.api.metadata.CustomValue;
 import net.fabricmc.loader.api.metadata.ModDependency;
 import net.fabricmc.loader.api.metadata.ModEnvironment;
 import net.fabricmc.loader.api.metadata.Person;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 final class V1ModMetadata extends AbstractModMetadata implements LoaderModMetadata {
+
 	static final IconEntry NO_ICON = size -> Optional.empty();
 
 	// Required values
@@ -50,6 +49,7 @@ final class V1ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	private final Map<String, List<EntrypointMetadata>> entrypoints;
 	private final Collection<NestedJarEntry> jars;
 	private final Collection<MixinEntry> mixins;
+
 	@Nullable
 	private final String accessWidener;
 
@@ -67,6 +67,7 @@ final class V1ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	// Optional (metadata)
 	@Nullable
 	private final String name;
+
 	private final String description;
 	private final Collection<Person> authors;
 	private final Collection<Person> contributors;
@@ -80,7 +81,31 @@ final class V1ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	// Optional (custom values)
 	private final Map<String, CustomValue> customValues;
 
-	V1ModMetadata(String id, Version version, Collection<String> provides, ModEnvironment environment, Map<String, List<EntrypointMetadata>> entrypoints, Collection<NestedJarEntry> jars, Collection<MixinEntry> mixins, @Nullable String accessWidener, Map<String, ModDependency> depends, Map<String, ModDependency> recommends, Map<String, ModDependency> suggests, Map<String, ModDependency> conflicts, Map<String, ModDependency> breaks, Map<String, ModDependency> requires, /* @Nullable */ String name, @Nullable String description, Collection<Person> authors, Collection<Person> contributors, @Nullable ContactInformation contact, Collection<String> license, IconEntry icon, Map<String, String> languageAdapters, Map<String, CustomValue> customValues) {
+	V1ModMetadata(
+		String id,
+		Version version,
+		Collection<String> provides,
+		ModEnvironment environment,
+		Map<String, List<EntrypointMetadata>> entrypoints,
+		Collection<NestedJarEntry> jars,
+		Collection<MixinEntry> mixins,
+		@Nullable String accessWidener,
+		Map<String, ModDependency> depends,
+		Map<String, ModDependency> recommends,
+		Map<String, ModDependency> suggests,
+		Map<String, ModDependency> conflicts,
+		Map<String, ModDependency> breaks,
+		Map<String, ModDependency> requires,
+		/* @Nullable */String name,
+		@Nullable String description,
+		Collection<Person> authors,
+		Collection<Person> contributors,
+		@Nullable ContactInformation contact,
+		Collection<String> license,
+		IconEntry icon,
+		Map<String, String> languageAdapters,
+		Map<String, CustomValue> customValues
+	) {
 		this.id = id;
 		this.version = version;
 		this.provides = Collections.unmodifiableCollection(provides);
@@ -89,11 +114,16 @@ final class V1ModMetadata extends AbstractModMetadata implements LoaderModMetada
 		this.jars = Collections.unmodifiableCollection(jars);
 		this.mixins = Collections.unmodifiableCollection(mixins);
 		this.accessWidener = accessWidener;
-		this.depends = DependencyOverrides.INSTANCE.getActiveDependencyMap("depends", id, Collections.unmodifiableMap(depends));
-		this.recommends = DependencyOverrides.INSTANCE.getActiveDependencyMap("recommends", id, Collections.unmodifiableMap(recommends));
-		this.suggests = DependencyOverrides.INSTANCE.getActiveDependencyMap("suggests", id, Collections.unmodifiableMap(suggests));
-		this.conflicts = DependencyOverrides.INSTANCE.getActiveDependencyMap("conflicts", id, Collections.unmodifiableMap(conflicts));
-		this.breaks = DependencyOverrides.INSTANCE.getActiveDependencyMap("breaks", id, Collections.unmodifiableMap(breaks));
+		this.depends =
+			DependencyOverrides.INSTANCE.getActiveDependencyMap("depends", id, Collections.unmodifiableMap(depends));
+		this.recommends =
+			DependencyOverrides.INSTANCE.getActiveDependencyMap("recommends", id, Collections.unmodifiableMap(recommends));
+		this.suggests =
+			DependencyOverrides.INSTANCE.getActiveDependencyMap("suggests", id, Collections.unmodifiableMap(suggests));
+		this.conflicts =
+			DependencyOverrides.INSTANCE.getActiveDependencyMap("conflicts", id, Collections.unmodifiableMap(conflicts));
+		this.breaks =
+			DependencyOverrides.INSTANCE.getActiveDependencyMap("breaks", id, Collections.unmodifiableMap(breaks));
 		this.requires = Collections.unmodifiableMap(requires);
 		this.name = name;
 
@@ -290,11 +320,16 @@ final class V1ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	@Override
 	public void emitFormatWarnings(Logger logger) {
 		if (!this.requires.isEmpty()) {
-			logger.warn("Mod `{}` ({}) uses 'requires' key in fabric.mod.json, which is not supported - use 'depends'", this.id, this.version);
+			logger.warn(
+				"Mod `{}` ({}) uses 'requires' key in fabric.mod.json, which is not supported - use 'depends'",
+				this.id,
+				this.version
+			);
 		}
 	}
 
 	static final class EntrypointMetadataImpl implements EntrypointMetadata {
+
 		private final String adapter;
 		private final String value;
 
@@ -315,6 +350,7 @@ final class V1ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	}
 
 	static final class JarEntry implements NestedJarEntry {
+
 		private final String file;
 
 		JarEntry(String file) {
@@ -328,6 +364,7 @@ final class V1ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	}
 
 	static final class MixinEntry {
+
 		private final String config;
 		private final ModEnvironment environment;
 
@@ -342,6 +379,7 @@ final class V1ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	}
 
 	static final class Single implements IconEntry {
+
 		private final String icon;
 
 		Single(String icon) {
@@ -355,6 +393,7 @@ final class V1ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	}
 
 	static final class MapEntry implements IconEntry {
+
 		private final SortedMap<Integer, String> icons;
 
 		MapEntry(SortedMap<Integer, String> icons) {

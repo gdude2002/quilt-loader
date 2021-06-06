@@ -16,14 +16,14 @@
 
 package net.fabricmc.test;
 
+import java.util.function.Predicate;
 import net.fabricmc.loader.api.VersionParsingException;
+import org.jetbrains.annotations.Nullable;
 import org.quiltmc.loader.impl.util.version.SemanticVersionImpl;
 import org.quiltmc.loader.impl.util.version.SemanticVersionPredicateParser;
 
-import org.jetbrains.annotations.Nullable;
-import java.util.function.Predicate;
-
 public class VersionParsingTests {
+
 	private static Exception tryParseSemantic(String s, boolean storeX) {
 		try {
 			new SemanticVersionImpl(s, storeX);

@@ -116,6 +116,11 @@ public interface CustomValue {
 	 * The possible types of a custom value.
 	 */
 	enum CvType {
-		OBJECT, ARRAY, STRING, NUMBER, BOOLEAN, NULL;
+		OBJECT,
+		ARRAY,
+		STRING,
+		NUMBER,
+		BOOLEAN,
+		NULL,
 	}
 }

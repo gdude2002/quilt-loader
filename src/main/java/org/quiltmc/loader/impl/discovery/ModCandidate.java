@@ -16,11 +16,11 @@
 
 package org.quiltmc.loader.impl.discovery;
 
+import java.net.URL;
 import org.quiltmc.loader.impl.metadata.LoaderModMetadata;
 
-import java.net.URL;
-
 public class ModCandidate {
+
 	private final LoaderModMetadata info;
 	private final URL originUrl;
 	private final int depth;
@@ -55,7 +55,10 @@ public class ModCandidate {
 			return false;
 		} else {
 			ModCandidate other = (ModCandidate) obj;
-			return other.info.getVersion().getFriendlyString().equals(info.getVersion().getFriendlyString()) && other.info.getId().equals(info.getId());
+			return (
+				other.info.getVersion().getFriendlyString().equals(info.getVersion().getFriendlyString()) &&
+				other.info.getId().equals(info.getId())
+			);
 		}
 	}
 
@@ -66,6 +69,6 @@ public class ModCandidate {
 
 	@Override
 	public String toString() {
-		return "ModCandidate{" + info.getId() + "@" + info.getVersion().getFriendlyString() + "}";
+		return ("ModCandidate{" + info.getId() + "@" + info.getVersion().getFriendlyString() + "}");
 	}
 }

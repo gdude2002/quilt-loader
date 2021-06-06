@@ -25,6 +25,7 @@ package org.quiltmc.loader.impl.entrypoint.applet;
  * It has been adapted here for the purposes of the Fabric loader.
  */
 class AppletForcedShutdownListener implements Runnable {
+
 	private final long duration;
 
 	AppletForcedShutdownListener(long duration) {

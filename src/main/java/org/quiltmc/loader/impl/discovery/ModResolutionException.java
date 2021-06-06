@@ -18,6 +18,7 @@ package org.quiltmc.loader.impl.discovery;
 
 @SuppressWarnings("serial")
 public class ModResolutionException extends Exception {
+
 	public ModResolutionException(String s) {
 		super(s);
 	}

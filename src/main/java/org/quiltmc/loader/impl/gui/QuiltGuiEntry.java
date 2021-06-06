@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
 import org.quiltmc.json5.JsonReader;
 import org.quiltmc.json5.JsonWriter;
 import org.quiltmc.loader.impl.QuiltLoaderImpl;
@@ -45,15 +44,16 @@ import org.quiltmc.loader.impl.gui.QuiltStatusTree.QuiltStatusTab;
 
 /** The main entry point for all quilt-based stuff. */
 public final class QuiltGuiEntry {
+
 	/** Opens the given {@link QuiltStatusTree} in a new swing window.
-	 * 
+	 *
 	 * @throws Exception if something went wrong while opening the window. */
 	public static void open(QuiltStatusTree tree) throws Exception {
 		open(tree, null, true);
 	}
 
 	/** Opens the given {@link QuiltStatusTree} in a new swing window.
-	 * 
+	 *
 	 * @param forceFork If true then this will create a new process to host the window, false will always use this
 	 *            process, and null will only fork if the current operating system doesn't support LWJGL + swing windows
 	 *            at the same time (such as mac osx).

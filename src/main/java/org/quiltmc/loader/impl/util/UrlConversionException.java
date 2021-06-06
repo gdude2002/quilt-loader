@@ -18,6 +18,7 @@ package org.quiltmc.loader.impl.util;
 
 @SuppressWarnings("serial")
 public class UrlConversionException extends Exception {
+
 	public UrlConversionException() {
 		super();
 	}

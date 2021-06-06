@@ -16,18 +16,18 @@
 
 package org.quiltmc.loader.impl.language;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
-import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
-import org.objectweb.asm.ClassReader;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
+import org.objectweb.asm.ClassReader;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
 
 @Deprecated
 public class JavaLanguageAdapter implements LanguageAdapter {
+
 	private static boolean canApplyInterface(String itfString) throws IOException {
 		String className = itfString + ".class";
 
@@ -79,7 +79,6 @@ public class JavaLanguageAdapter implements LanguageAdapter {
 					default:
 						stream.close();
 						throw new ClassNotFoundException("Could not find or load class " + s);
-
 				}
 			}
 		}

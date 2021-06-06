@@ -25,12 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import net.fabricmc.loader.api.VersionParsingException;
-
-import org.quiltmc.json5.JsonReader;
-import org.quiltmc.json5.JsonToken;
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -38,30 +33,35 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-
+import org.quiltmc.json5.JsonReader;
+import org.quiltmc.json5.JsonToken;
+import org.quiltmc.loader.impl.QuiltLoaderImpl;
 import org.quiltmc.loader.impl.metadata.ParseMetadataException;
 import org.quiltmc.loader.impl.util.FileSystemUtil;
 import org.quiltmc.loader.impl.util.version.SemanticVersionImpl;
 import org.quiltmc.loader.impl.util.version.SemanticVersionPredicateParser;
 
 public final class McVersionLookup {
+
 	private static final Pattern VERSION_PATTERN = Pattern.compile(
-			"0\\.\\d+(\\.\\d+)?a?(_\\d+)?|" // match classic versions first: 0.1.2a_34
-			+ "\\d+\\.\\d+(\\.\\d+)?(-pre\\d+| Pre-[Rr]elease \\d+)?|" // modern non-snapshot: 1.2, 1.2.3, optional -preN or " Pre-Release N" suffix
-			+ "\\d+\\.\\d+(\\.\\d+)?(-rc\\d+| Rr]elease Candidate \\d+)?|" // 1.16+ Release Candidate
-			+ "\\d+w\\d+[a-z]|" // modern snapshot: 12w34a
-			+ "[a-c]\\d\\.\\d+(\\.\\d+)?[a-z]?(_\\d+)?[a-z]?|" // alpha/beta a1.2.3_45
-			+ "(Alpha|Beta) v?\\d+\\.\\d+(\\.\\d+)?[a-z]?(_\\d+)?[a-z]?|" // long alpha/beta names: Alpha v1.2.3_45
-			+ "Inf?dev (0\\.31 )?\\d+(-\\d+)?|" // long indev/infdev names: Infdev 12345678-9
-			+ "(rd|inf)-\\d+|" // early rd-123, inf-123
-			+ "1\\.RV-Pre1|3D Shareware v1\\.34" // odd exceptions
-			);
+		"0\\.\\d+(\\.\\d+)?a?(_\\d+)?|" + // match classic versions first: 0.1.2a_34
+		"\\d+\\.\\d+(\\.\\d+)?(-pre\\d+| Pre-[Rr]elease \\d+)?|" + // modern non-snapshot: 1.2, 1.2.3, optional -preN or " Pre-Release N" suffix
+		"\\d+\\.\\d+(\\.\\d+)?(-rc\\d+| Rr]elease Candidate \\d+)?|" + // 1.16+ Release Candidate
+		"\\d+w\\d+[a-z]|" + // modern snapshot: 12w34a
+		"[a-c]\\d\\.\\d+(\\.\\d+)?[a-z]?(_\\d+)?[a-z]?|" + // alpha/beta a1.2.3_45
+		"(Alpha|Beta) v?\\d+\\.\\d+(\\.\\d+)?[a-z]?(_\\d+)?[a-z]?|" + // long alpha/beta names: Alpha v1.2.3_45
+		"Inf?dev (0\\.31 )?\\d+(-\\d+)?|" + // long indev/infdev names: Infdev 12345678-9
+		"(rd|inf)-\\d+|" + // early rd-123, inf-123
+		"1\\.RV-Pre1|3D Shareware v1\\.34" // odd exceptions
+	);
 	private static final Pattern RELEASE_PATTERN = Pattern.compile("\\d+\\.\\d+(\\.\\d+)?");
 	private static final Pattern PRE_RELEASE_PATTERN = Pattern.compile(".+(?:-pre| Pre-[Rr]elease )(\\d+)");
 	private static final Pattern RELEASE_CANDIDATE_PATTERN = Pattern.compile(".+(?:-rc| [Rr]elease Candidate )(\\d+)");
 	private static final Pattern SNAPSHOT_PATTERN = Pattern.compile("(?:Snapshot )?(\\d+)w0?(0|[1-9]\\d*)([a-z])");
 	private static final Pattern BETA_PATTERN = Pattern.compile("(?:b|Beta v?)1\\.(\\d+(\\.\\d+)?[a-z]?(_\\d+)?[a-z]?)");
-	private static final Pattern ALPHA_PATTERN = Pattern.compile("(?:a|Alpha v?)1\\.(\\d+(\\.\\d+)?[a-z]?(_\\d+)?[a-z]?)");
+	private static final Pattern ALPHA_PATTERN = Pattern.compile(
+		"(?:a|Alpha v?)1\\.(\\d+(\\.\\d+)?[a-z]?(_\\d+)?[a-z]?)"
+	);
 	private static final Pattern INDEV_PATTERN = Pattern.compile("(?:inf-|Inf?dev )(?:0\\.31 )?(\\d+(-\\d+)?)");
 	private static final String STRING_DESC = "Ljava/lang/String;";
 
@@ -79,26 +79,34 @@ public final class McVersionLookup {
 			Path file;
 
 			// version.json - contains version and target release for 18w47b+
-			if (Files.isRegularFile(file = fs.getPath("version.json"))
-					&& (ret = fromVersionJson(Files.newInputStream(file))) != null) {
+			if (
+				Files.isRegularFile(file = fs.getPath("version.json")) &&
+				(ret = fromVersionJson(Files.newInputStream(file))) != null
+			) {
 				return ret;
 			}
 
 			// constant field RealmsSharedConstants.VERSION_STRING
-			if (Files.isRegularFile(file = fs.getPath("net/minecraft/realms/RealmsSharedConstants.class"))
-					&& (ret = fromAnalyzer(Files.newInputStream(file), new FieldStringConstantVisitor("VERSION_STRING"))) != null) {
+			if (
+				Files.isRegularFile(file = fs.getPath("net/minecraft/realms/RealmsSharedConstants.class")) &&
+				(ret = fromAnalyzer(Files.newInputStream(file), new FieldStringConstantVisitor("VERSION_STRING"))) != null
+			) {
 				return ret;
 			}
 
 			// constant return value of RealmsBridge.getVersionString (presumably inlined+dead code eliminated VERSION_STRING)
-			if (Files.isRegularFile(file = fs.getPath("net/minecraft/realms/RealmsBridge.class"))
-					&& (ret = fromAnalyzer(Files.newInputStream(file), new MethodConstantRetVisitor("getVersionString"))) != null) {
+			if (
+				Files.isRegularFile(file = fs.getPath("net/minecraft/realms/RealmsBridge.class")) &&
+				(ret = fromAnalyzer(Files.newInputStream(file), new MethodConstantRetVisitor("getVersionString"))) != null
+			) {
 				return ret;
 			}
 
 			// version-like String constant used in MinecraftServer.run or another MinecraftServer method
-			if (Files.isRegularFile(file = fs.getPath("net/minecraft/server/MinecraftServer.class"))
-					&& (ret = fromAnalyzer(Files.newInputStream(file), new MethodConstantVisitor("run"))) != null) {
+			if (
+				Files.isRegularFile(file = fs.getPath("net/minecraft/server/MinecraftServer.class")) &&
+				(ret = fromAnalyzer(Files.newInputStream(file), new MethodConstantVisitor("run"))) != null
+			) {
 				return ret;
 			}
 
@@ -109,7 +117,16 @@ public final class McVersionLookup {
 				}
 
 				// version-like constant passed into Display.setTitle in a Minecraft method (obfuscated/unknown name)
-				if ((ret = fromAnalyzer(Files.newInputStream(file), new MethodStringConstantContainsVisitor("org/lwjgl/opengl/Display", "setTitle"))) != null) {
+				if (
+					(
+						ret =
+							fromAnalyzer(
+								Files.newInputStream(file),
+								new MethodStringConstantContainsVisitor("org/lwjgl/opengl/Display", "setTitle")
+							)
+					) !=
+					null
+				) {
 					return ret;
 				}
 			}
@@ -121,7 +138,7 @@ public final class McVersionLookup {
 	}
 
 	private static McVersion fromVersionJson(InputStream is) {
-		try(JsonReader reader = JsonReader.json(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+		try (JsonReader reader = JsonReader.json(new InputStreamReader(is, StandardCharsets.UTF_8))) {
 			String id = null;
 			String name = null;
 			String release = null;
@@ -130,33 +147,33 @@ public final class McVersionLookup {
 
 			while (reader.hasNext()) {
 				switch (reader.nextName()) {
-				case "id":
-					if (reader.peek() != JsonToken.STRING) {
-						// FIXME: Needs its own type?
-						throw new ParseMetadataException("\"id\" in version json must be a string");
-					}
+					case "id":
+						if (reader.peek() != JsonToken.STRING) {
+							// FIXME: Needs its own type?
+							throw new ParseMetadataException("\"id\" in version json must be a string");
+						}
 
-					id = reader.nextString();
-					break;
-				case "name":
-					if (reader.peek() != JsonToken.STRING) {
-						// FIXME: Needs its own type?
-						throw new ParseMetadataException("\"name\" in version json must be a string");
-					}
+						id = reader.nextString();
+						break;
+					case "name":
+						if (reader.peek() != JsonToken.STRING) {
+							// FIXME: Needs its own type?
+							throw new ParseMetadataException("\"name\" in version json must be a string");
+						}
 
-					name = reader.nextString();
-					break;
-				case "release_target":
-					if (reader.peek() != JsonToken.STRING) {
-						// FIXME: Needs its own type?
-						throw new ParseMetadataException("\"release_target\" in version json must be a string");
-					}
+						name = reader.nextString();
+						break;
+					case "release_target":
+						if (reader.peek() != JsonToken.STRING) {
+							// FIXME: Needs its own type?
+							throw new ParseMetadataException("\"release_target\" in version json must be a string");
+						}
 
-					release = reader.nextString();
-					break;
-				default:
-					// There is typically other stuff in the file, just ignore anything we don't know
-					reader.skipValue();
+						release = reader.nextString();
+						break;
+					default:
+						// There is typically other stuff in the file, just ignore anything we don't know
+						reader.skipValue();
 				}
 			}
 
@@ -190,7 +207,7 @@ public final class McVersionLookup {
 		} finally {
 			try {
 				is.close();
-			} catch (IOException e) { }
+			} catch (IOException e) {}
 		}
 
 		return null;
@@ -327,7 +344,8 @@ public final class McVersionLookup {
 					boolean legacyVersion;
 
 					try {
-						legacyVersion = SemanticVersionPredicateParser.create("<=1.16").test(new SemanticVersionImpl(release, false));
+						legacyVersion =
+							SemanticVersionPredicateParser.create("<=1.16").test(new SemanticVersionImpl(release, false));
 					} catch (VersionParsingException e) {
 						throw new RuntimeException("Failed to parse version: " + release);
 					}
@@ -423,9 +441,9 @@ public final class McVersionLookup {
 	}
 
 	private static final class FieldStringConstantVisitor extends ClassVisitor implements Analyzer {
+
 		public FieldStringConstantVisitor(String fieldName) {
 			super(QuiltLoaderImpl.ASM_VERSION);
-
 			this.fieldName = fieldName;
 		}
 
@@ -449,7 +467,13 @@ public final class McVersionLookup {
 		}
 
 		@Override
-		public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+		public MethodVisitor visitMethod(
+			int access,
+			String name,
+			String descriptor,
+			String signature,
+			String[] exceptions
+		) {
 			if (result != null || !name.equals("<clinit>")) return null;
 
 			// capture LDC ".." followed by PUTSTATIC this.fieldName
@@ -467,12 +491,14 @@ public final class McVersionLookup {
 
 				@Override
 				public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
-					if (result == null
-							&& lastLdc != null
-							&& opcode == Opcodes.PUTSTATIC
-							&& owner.equals(className)
-							&& name.equals(fieldName)
-							&& descriptor.equals(STRING_DESC)) {
+					if (
+						result == null &&
+						lastLdc != null &&
+						opcode == Opcodes.PUTSTATIC &&
+						owner.equals(className) &&
+						name.equals(fieldName) &&
+						descriptor.equals(STRING_DESC)
+					) {
 						result = lastLdc;
 					}
 
@@ -494,9 +520,9 @@ public final class McVersionLookup {
 	}
 
 	private static final class MethodStringConstantContainsVisitor extends ClassVisitor implements Analyzer {
+
 		public MethodStringConstantContainsVisitor(String methodOwner, String methodName) {
 			super(QuiltLoaderImpl.ASM_VERSION);
-
 			this.methodOwner = methodOwner;
 			this.methodName = methodName;
 		}
@@ -507,7 +533,13 @@ public final class McVersionLookup {
 		}
 
 		@Override
-		public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+		public MethodVisitor visitMethod(
+			int access,
+			String name,
+			String descriptor,
+			String signature,
+			String[] exceptions
+		) {
 			if (result != null) return null;
 
 			// capture LDC ".." followed by INVOKE methodOwner.methodName
@@ -523,11 +555,13 @@ public final class McVersionLookup {
 
 				@Override
 				public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean itf) {
-					if (result == null
-							&& lastLdc != null
-							&& owner.equals(methodOwner)
-							&& name.equals(methodName)
-							&& descriptor.startsWith("(" + STRING_DESC + ")")) {
+					if (
+						result == null &&
+						lastLdc != null &&
+						owner.equals(methodOwner) &&
+						name.equals(methodName) &&
+						descriptor.startsWith("(" + STRING_DESC + ")")
+					) {
 						result = lastLdc;
 					}
 
@@ -549,9 +583,9 @@ public final class McVersionLookup {
 	}
 
 	private static final class MethodConstantRetVisitor extends ClassVisitor implements Analyzer {
+
 		public MethodConstantRetVisitor(String methodName) {
 			super(QuiltLoaderImpl.ASM_VERSION);
-
 			this.methodName = methodName;
 		}
 
@@ -561,11 +595,20 @@ public final class McVersionLookup {
 		}
 
 		@Override
-		public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-			if (result != null
-					|| methodName != null && !name.equals(methodName)
-					|| !descriptor.endsWith(STRING_DESC)
-					|| descriptor.charAt(descriptor.length() - STRING_DESC.length() - 1) != ')') {
+		public MethodVisitor visitMethod(
+			int access,
+			String name,
+			String descriptor,
+			String signature,
+			String[] exceptions
+		) {
+			if (
+				result != null ||
+				methodName != null &&
+				!name.equals(methodName) ||
+				!descriptor.endsWith(STRING_DESC) ||
+				descriptor.charAt(descriptor.length() - STRING_DESC.length() - 1) != ')'
+			) {
 				return null;
 			}
 
@@ -584,9 +627,7 @@ public final class McVersionLookup {
 
 				@Override
 				public void visitInsn(int opcode) {
-					if (result == null
-							&& lastLdc != null
-							&& opcode == Opcodes.ARETURN) {
+					if (result == null && lastLdc != null && opcode == Opcodes.ARETURN) {
 						result = lastLdc;
 					}
 
@@ -607,9 +648,9 @@ public final class McVersionLookup {
 	}
 
 	private static final class MethodConstantVisitor extends ClassVisitor implements Analyzer {
+
 		public MethodConstantVisitor(String methodNameHint) {
 			super(QuiltLoaderImpl.ASM_VERSION);
-
 			this.methodNameHint = methodNameHint;
 		}
 
@@ -619,7 +660,13 @@ public final class McVersionLookup {
 		}
 
 		@Override
-		public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+		public MethodVisitor visitMethod(
+			int access,
+			String name,
+			String descriptor,
+			String signature,
+			String[] exceptions
+		) {
 			final boolean isRequestedMethod = name.equals(methodNameHint);
 
 			if (result != null && !isRequestedMethod) {
@@ -631,9 +678,11 @@ public final class McVersionLookup {
 				public void visitLdcInsn(Object value) {
 					String str;
 
-					if ((result == null || !foundInMethodHint && isRequestedMethod)
-							&& value instanceof String
-							&& isProbableVersion(str = (String) value)) {
+					if (
+						(result == null || !foundInMethodHint && isRequestedMethod) &&
+						value instanceof String &&
+						isProbableVersion(str = (String) value)
+					) {
 						result = str;
 						foundInMethodHint = isRequestedMethod;
 					}
@@ -646,7 +695,8 @@ public final class McVersionLookup {
 		private boolean foundInMethodHint;
 	}
 
-	private static abstract class InsnFwdMethodVisitor extends MethodVisitor {
+	private abstract static class InsnFwdMethodVisitor extends MethodVisitor {
+
 		public InsnFwdMethodVisitor() {
 			super(QuiltLoaderImpl.ASM_VERSION);
 		}
@@ -684,12 +734,23 @@ public final class McVersionLookup {
 		}
 
 		@Override
-		public void visitMethodInsn(int opcode, java.lang.String owner, java.lang.String name, java.lang.String descriptor, boolean isInterface) {
+		public void visitMethodInsn(
+			int opcode,
+			java.lang.String owner,
+			java.lang.String name,
+			java.lang.String descriptor,
+			boolean isInterface
+		) {
 			visitAnyInsn();
 		}
 
 		@Override
-		public void visitInvokeDynamicInsn(java.lang.String name, java.lang.String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+		public void visitInvokeDynamicInsn(
+			java.lang.String name,
+			java.lang.String descriptor,
+			Handle bootstrapMethodHandle,
+			Object... bootstrapMethodArguments
+		) {
 			visitAnyInsn();
 		}
 
@@ -720,6 +781,7 @@ public final class McVersionLookup {
 	}
 
 	public static final class McVersion {
+
 		private McVersion(String name, String release) {
 			this.raw = name;
 			this.normalized = normalizeVersion(name, release);

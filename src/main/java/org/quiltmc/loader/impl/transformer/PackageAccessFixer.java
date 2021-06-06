@@ -27,6 +27,7 @@ import org.objectweb.asm.Opcodes;
  * packages. The class verifier will complain unless we simply change package-private and protected to public.
  */
 public class PackageAccessFixer extends ClassVisitor {
+
 	private static int modAccess(int access) {
 		if ((access & 0x7) != Opcodes.ACC_PRIVATE) {
 			return (access & (~0x7)) | Opcodes.ACC_PUBLIC;
@@ -46,13 +47,13 @@ public class PackageAccessFixer extends ClassVisitor {
 		final String name,
 		final String signature,
 		final String superName,
-		final String[] interfaces) {
+		final String[] interfaces
+	) {
 		super.visit(version, modAccess(access), name, signature, superName, interfaces);
 	}
 
 	@Override
-	public void visitInnerClass(
-		final String name, final String outerName, final String innerName, final int access) {
+	public void visitInnerClass(final String name, final String outerName, final String innerName, final int access) {
 		super.visitInnerClass(name, outerName, innerName, modAccess(access));
 	}
 
@@ -62,7 +63,8 @@ public class PackageAccessFixer extends ClassVisitor {
 		final String name,
 		final String descriptor,
 		final String signature,
-		final Object value) {
+		final Object value
+	) {
 		return super.visitField(modAccess(access), name, descriptor, signature, value);
 	}
 
@@ -72,7 +74,8 @@ public class PackageAccessFixer extends ClassVisitor {
 		final String name,
 		final String descriptor,
 		final String signature,
-		final String[] exceptions) {
+		final String[] exceptions
+	) {
 		return super.visitMethod(modAccess(access), name, descriptor, signature, exceptions);
 	}
 }

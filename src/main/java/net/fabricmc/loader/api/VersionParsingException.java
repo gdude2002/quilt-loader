@@ -18,6 +18,7 @@ package net.fabricmc.loader.api;
 
 @SuppressWarnings({ "deprecation", "serial" }) //Extending the deprecated one for backwards compatibility
 public class VersionParsingException extends org.quiltmc.loader.impl.util.version.VersionParsingException {
+
 	public VersionParsingException() {
 		super();
 	}

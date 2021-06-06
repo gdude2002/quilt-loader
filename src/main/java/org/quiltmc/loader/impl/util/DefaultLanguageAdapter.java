@@ -16,21 +16,19 @@
 
 package org.quiltmc.loader.impl.util;
 
+import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.List;
 import net.fabricmc.loader.api.LanguageAdapter;
 import net.fabricmc.loader.api.LanguageAdapterException;
 import net.fabricmc.loader.api.ModContainer;
 import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
 
-import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.List;
-
 public final class DefaultLanguageAdapter implements LanguageAdapter {
+
 	public static final DefaultLanguageAdapter INSTANCE = new DefaultLanguageAdapter();
 
-	private DefaultLanguageAdapter() {
-
-	}
+	private DefaultLanguageAdapter() {}
 
 	@Override
 	public <T> T create(ModContainer mod, String value, Class<T> type) throws LanguageAdapterException {
@@ -58,7 +56,7 @@ public final class DefaultLanguageAdapter implements LanguageAdapter {
 			} else {
 				throw new LanguageAdapterException("Class " + c.getName() + " cannot be cast to " + type.getName() + "!");
 			}
-		} else /* length == 2 */ {
+		} else /* length == 2 */{
 			List<Method> methodList = new ArrayList<>();
 
 			for (Method m : c.getDeclaredMethods()) {
@@ -94,7 +92,9 @@ public final class DefaultLanguageAdapter implements LanguageAdapter {
 			}
 
 			if (!type.isInterface()) {
-				throw new LanguageAdapterException("Cannot proxy method " + value + " to non-interface type " + type.getName() + "!");
+				throw new LanguageAdapterException(
+					"Cannot proxy method " + value + " to non-interface type " + type.getName() + "!"
+				);
 			}
 
 			if (methodList.isEmpty()) {
@@ -117,12 +117,16 @@ public final class DefaultLanguageAdapter implements LanguageAdapter {
 			final Object targetObject = object;
 
 			@SuppressWarnings("unchecked")
-			T tmp = (T) Proxy.newProxyInstance(QuiltLauncherBase.getLauncher().getTargetClassLoader(), new Class[] { type }, new InvocationHandler() {
-				@Override
-				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-					return targetMethod.invoke(targetObject, args);
+			T tmp = (T) Proxy.newProxyInstance(
+				QuiltLauncherBase.getLauncher().getTargetClassLoader(),
+				new Class[] { type },
+				new InvocationHandler() {
+					@Override
+					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+						return targetMethod.invoke(targetObject, args);
+					}
 				}
-			});
+			);
 			return tmp;
 		}
 	}

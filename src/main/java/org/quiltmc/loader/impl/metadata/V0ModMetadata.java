@@ -22,9 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import org.apache.logging.log4j.Logger;
-
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.metadata.ContactInformation;
@@ -32,9 +29,15 @@ import net.fabricmc.loader.api.metadata.CustomValue;
 import net.fabricmc.loader.api.metadata.ModDependency;
 import net.fabricmc.loader.api.metadata.ModEnvironment;
 import net.fabricmc.loader.api.metadata.Person;
+import org.apache.logging.log4j.Logger;
 
 final class V0ModMetadata extends AbstractModMetadata implements LoaderModMetadata {
-	private static final Mixins EMPTY_MIXINS = new Mixins(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+
+	private static final Mixins EMPTY_MIXINS = new Mixins(
+		Collections.emptyList(),
+		Collections.emptyList(),
+		Collections.emptyList()
+	);
 	// Required
 	private final String id;
 	private final Version version;
@@ -59,14 +62,33 @@ final class V0ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	private final ContactInformation links;
 	private final String license;
 
-	V0ModMetadata(String id, Version version, Map<String, ModDependency> requires, Map<String, ModDependency> conflicts, Mixins mixins, ModEnvironment environment, String initializer, Collection<String> initializers, String name, String description, Map<String, ModDependency> recommends, Collection<Person> authors, Collection<Person> contributors, ContactInformation links, String license) {
+	V0ModMetadata(
+		String id,
+		Version version,
+		Map<String, ModDependency> requires,
+		Map<String, ModDependency> conflicts,
+		Mixins mixins,
+		ModEnvironment environment,
+		String initializer,
+		Collection<String> initializers,
+		String name,
+		String description,
+		Map<String, ModDependency> recommends,
+		Collection<Person> authors,
+		Collection<Person> contributors,
+		ContactInformation links,
+		String license
+	) {
 		this.id = id;
 		this.version = version;
-		this.requires = DependencyOverrides.INSTANCE.getActiveDependencyMap("depends", id, Collections.unmodifiableMap(requires));
+		this.requires =
+			DependencyOverrides.INSTANCE.getActiveDependencyMap("depends", id, Collections.unmodifiableMap(requires));
 		this.recommends = DependencyOverrides.INSTANCE.getActiveDependencyMap("recommends", id, Collections.emptyMap());
-		this.suggests = DependencyOverrides.INSTANCE.getActiveDependencyMap("suggests", id, Collections.unmodifiableMap(recommends));
+		this.suggests =
+			DependencyOverrides.INSTANCE.getActiveDependencyMap("suggests", id, Collections.unmodifiableMap(recommends));
 		this.conflicts = DependencyOverrides.INSTANCE.getActiveDependencyMap("conflicts", id, Collections.emptyMap());
-		this.breaks = DependencyOverrides.INSTANCE.getActiveDependencyMap("breaks", id, Collections.unmodifiableMap(conflicts));
+		this.breaks =
+			DependencyOverrides.INSTANCE.getActiveDependencyMap("breaks", id, Collections.unmodifiableMap(conflicts));
 
 		if (mixins == null) {
 			this.mixins = V0ModMetadata.EMPTY_MIXINS;
@@ -199,7 +221,9 @@ final class V0ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	}
 
 	@Override
-	public Map<String, CustomValue> getCustomValues() { return Collections.emptyMap(); }
+	public Map<String, CustomValue> getCustomValues() {
+		return Collections.emptyMap();
+	}
 
 	@Override
 	public boolean containsCustomValue(String key) {
@@ -245,20 +269,19 @@ final class V0ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	}
 
 	@Override
-	public void emitFormatWarnings(Logger logger) {
-	}
+	public void emitFormatWarnings(Logger logger) {}
 
 	@Override
 	public Collection<String> getMixinConfigs(EnvType type) {
 		List<String> mixinConfigs = new ArrayList<>(this.mixins.common);
 
 		switch (type) {
-		case CLIENT:
-			mixinConfigs.addAll(this.mixins.client);
-			break;
-		case SERVER:
-			mixinConfigs.addAll(this.mixins.server);
-			break;
+			case CLIENT:
+				mixinConfigs.addAll(this.mixins.client);
+				break;
+			case SERVER:
+				mixinConfigs.addAll(this.mixins.server);
+				break;
 		}
 
 		return mixinConfigs;
@@ -270,6 +293,7 @@ final class V0ModMetadata extends AbstractModMetadata implements LoaderModMetada
 	}
 
 	static final class Mixins {
+
 		final Collection<String> client;
 		final Collection<String> common;
 		final Collection<String> server;

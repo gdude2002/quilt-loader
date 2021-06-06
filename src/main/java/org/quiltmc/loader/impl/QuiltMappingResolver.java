@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-
 import net.fabricmc.loader.api.MappingResolver;
 import net.fabricmc.mapping.tree.ClassDef;
 import net.fabricmc.mapping.tree.Descriptored;
@@ -31,12 +30,14 @@ import net.fabricmc.mapping.tree.TinyTree;
 import net.fabricmc.mapping.util.EntryTriple;
 
 class QuiltMappingResolver implements MappingResolver {
+
 	private final Supplier<TinyTree> mappingsSupplier;
 	private final Set<String> namespaces;
 	private final Map<String, NamespaceData> namespaceDataMap = new HashMap<>();
 	private final String targetNamespace;
 
 	private static class NamespaceData {
+
 		private final Map<String, String> classNames = new HashMap<>();
 		private final Map<String, String> classNamesInverse = new HashMap<>();
 		private final Map<EntryTriple, String> fieldNames = new HashMap<>();
@@ -50,30 +51,33 @@ class QuiltMappingResolver implements MappingResolver {
 	}
 
 	protected final NamespaceData getNamespaceData(String namespace) {
-		return namespaceDataMap.computeIfAbsent(namespace, (fromNamespace) -> {
-			if (!namespaces.contains(namespace)) {
-				throw new IllegalArgumentException("Unknown namespace: " + namespace);
+		return namespaceDataMap.computeIfAbsent(
+			namespace,
+			fromNamespace -> {
+				if (!namespaces.contains(namespace)) {
+					throw new IllegalArgumentException("Unknown namespace: " + namespace);
+				}
+
+				NamespaceData data = new NamespaceData();
+				TinyTree mappings = mappingsSupplier.get();
+				Map<String, String> classNameMap = new HashMap<>();
+
+				for (ClassDef classEntry : mappings.getClasses()) {
+					String fromClass = mapClassName(classNameMap, classEntry.getName(fromNamespace));
+					String toClass = mapClassName(classNameMap, classEntry.getName(targetNamespace));
+
+					data.classNames.put(fromClass, toClass);
+					data.classNamesInverse.put(toClass, fromClass);
+
+					String mappedClassName = mapClassName(classNameMap, fromClass);
+
+					recordMember(fromNamespace, classEntry.getFields(), data.fieldNames, mappedClassName);
+					recordMember(fromNamespace, classEntry.getMethods(), data.methodNames, mappedClassName);
+				}
+
+				return data;
 			}
-
-			NamespaceData data = new NamespaceData();
-			TinyTree mappings = mappingsSupplier.get();
-			Map<String, String> classNameMap = new HashMap<>();
-
-			for (ClassDef classEntry : mappings.getClasses()) {
-				String fromClass = mapClassName(classNameMap, classEntry.getName(fromNamespace));
-				String toClass = mapClassName(classNameMap, classEntry.getName(targetNamespace));
-
-				data.classNames.put(fromClass, toClass);
-				data.classNamesInverse.put(toClass, fromClass);
-
-				String mappedClassName = mapClassName(classNameMap, fromClass);
-
-				recordMember(fromNamespace, classEntry.getFields(), data.fieldNames, mappedClassName);
-				recordMember(fromNamespace, classEntry.getMethods(), data.methodNames, mappedClassName);
-			}
-
-			return data;
-		});
+		);
 	}
 
 	private static String replaceSlashesWithDots(String cname) {
@@ -84,9 +88,18 @@ class QuiltMappingResolver implements MappingResolver {
 		return classNameMap.computeIfAbsent(s, QuiltMappingResolver::replaceSlashesWithDots);
 	}
 
-	private <T extends Descriptored> void recordMember(String fromNamespace, Collection<T> descriptoredList, Map<EntryTriple, String> putInto, String fromClass) {
+	private <T extends Descriptored> void recordMember(
+		String fromNamespace,
+		Collection<T> descriptoredList,
+		Map<EntryTriple, String> putInto,
+		String fromClass
+	) {
 		for (T descriptored : descriptoredList) {
-			EntryTriple fromEntry = new EntryTriple(fromClass, descriptored.getName(fromNamespace), descriptored.getDescriptor(fromNamespace));
+			EntryTriple fromEntry = new EntryTriple(
+				fromClass,
+				descriptored.getName(fromNamespace),
+				descriptored.getDescriptor(fromNamespace)
+			);
 			putInto.put(fromEntry, descriptored.getName(targetNamespace));
 		}
 	}

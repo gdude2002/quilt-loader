@@ -16,11 +16,6 @@
 
 package org.quiltmc.loader.impl.metadata;
 
-import org.quiltmc.json5.JsonReader;
-import org.quiltmc.json5.JsonToken;
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
-import net.fabricmc.loader.api.metadata.ModDependency;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -34,9 +29,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import net.fabricmc.loader.api.metadata.ModDependency;
+import org.quiltmc.json5.JsonReader;
+import org.quiltmc.json5.JsonToken;
+import org.quiltmc.loader.impl.QuiltLoaderImpl;
 
 public final class DependencyOverrides {
-	private static final Collection<String> ALLOWED_KEYS = new HashSet<>(Arrays.asList("depends", "recommends", "suggests", "conflicts", "breaks"));
+
+	private static final Collection<String> ALLOWED_KEYS = new HashSet<>(
+		Arrays.asList("depends", "recommends", "suggests", "conflicts", "breaks")
+	);
 	public static final DependencyOverrides INSTANCE = new DependencyOverrides();
 
 	private final boolean exists;
@@ -59,14 +61,17 @@ public final class DependencyOverrides {
 			return;
 		}
 
-		try (JsonReader reader = JsonReader.json(new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8))) {
+		try (
+			JsonReader reader = JsonReader.json(new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8))
+		) {
 			dependencyOverrides = parse(reader);
 		} catch (IOException | ParseMetadataException e) {
 			throw new RuntimeException("Failed to parse " + path.toString(), e);
 		}
 	}
 
-	private static Map<String, Map<String, Map<String, ModDependency>>> parse(JsonReader reader) throws ParseMetadataException, IOException {
+	private static Map<String, Map<String, Map<String, ModDependency>>> parse(JsonReader reader)
+		throws ParseMetadataException, IOException {
 		if (reader.peek() != JsonToken.BEGIN_OBJECT) {
 			throw new ParseMetadataException("Root must be an object", reader);
 		}
@@ -104,7 +109,8 @@ public final class DependencyOverrides {
 		return dependencyOverrides;
 	}
 
-	private static Map<String, Map<String, ModDependency>> readKeys(JsonReader reader) throws IOException, ParseMetadataException {
+	private static Map<String, Map<String, ModDependency>> readKeys(JsonReader reader)
+		throws IOException, ParseMetadataException {
 		if (reader.peek() != JsonToken.BEGIN_OBJECT) {
 			throw new ParseMetadataException("Dependency container must be an object!", reader);
 		}
@@ -116,7 +122,10 @@ public final class DependencyOverrides {
 			String key = reader.nextName();
 
 			if (!ALLOWED_KEYS.contains(key.replaceAll("^[+-]", ""))) {
-				throw new ParseMetadataException(key + " is not an allowed dependency key, must be one of: " + String.join(", ", ALLOWED_KEYS), reader);
+				throw new ParseMetadataException(
+					key + " is not an allowed dependency key, must be one of: " + String.join(", ", ALLOWED_KEYS),
+					reader
+				);
 			}
 
 			containersMap.put(key, readDependenciesContainer(reader));
@@ -126,7 +135,8 @@ public final class DependencyOverrides {
 		return containersMap;
 	}
 
-	private static Map<String, ModDependency> readDependenciesContainer(JsonReader reader) throws IOException, ParseMetadataException {
+	private static Map<String, ModDependency> readDependenciesContainer(JsonReader reader)
+		throws IOException, ParseMetadataException {
 		if (reader.peek() != JsonToken.BEGIN_OBJECT) {
 			throw new ParseMetadataException("Dependency container must be an object!", reader);
 		}
@@ -147,7 +157,10 @@ public final class DependencyOverrides {
 
 					while (reader.hasNext()) {
 						if (reader.peek() != JsonToken.STRING) {
-							throw new ParseMetadataException("Dependency version range array must only contain string values", reader);
+							throw new ParseMetadataException(
+								"Dependency version range array must only contain string values",
+								reader
+							);
 						}
 
 						matcherStringList.add(reader.nextString());
@@ -166,8 +179,12 @@ public final class DependencyOverrides {
 		return modDependencyMap;
 	}
 
-	public Map<String, ModDependency> getActiveDependencyMap(String key, String modId, Map<String, ModDependency> defaultMap) {
-		if(!exists) {
+	public Map<String, ModDependency> getActiveDependencyMap(
+		String key,
+		String modId,
+		Map<String, ModDependency> defaultMap
+	) {
+		if (!exists) {
 			return defaultMap;
 		}
 

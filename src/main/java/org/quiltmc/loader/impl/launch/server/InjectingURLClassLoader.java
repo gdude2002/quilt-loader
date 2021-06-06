@@ -22,11 +22,12 @@ import java.util.Arrays;
 import java.util.List;
 
 class InjectingURLClassLoader extends URLClassLoader {
+
 	private final List<String> exclusions;
 
 	InjectingURLClassLoader(URL[] urls, ClassLoader classLoader, String... exclusions) {
 		super(urls, classLoader);
-		this.exclusions  = Arrays.asList(exclusions);
+		this.exclusions = Arrays.asList(exclusions);
 	}
 
 	@Override

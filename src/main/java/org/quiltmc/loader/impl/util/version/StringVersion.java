@@ -19,6 +19,7 @@ package org.quiltmc.loader.impl.util.version;
 import net.fabricmc.loader.api.Version;
 
 public class StringVersion implements Version {
+
 	private final String version;
 
 	public StringVersion(String version) {

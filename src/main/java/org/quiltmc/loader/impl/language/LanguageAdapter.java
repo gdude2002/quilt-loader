@@ -22,10 +22,11 @@ import java.io.IOException;
 public interface LanguageAdapter {
 	enum MissingSuperclassBehavior {
 		RETURN_NULL,
-		CRASH
+		CRASH,
 	}
 
-	default Object createInstance(String classString, Options options) throws ClassNotFoundException, LanguageAdapterException {
+	default Object createInstance(String classString, Options options)
+		throws ClassNotFoundException, LanguageAdapterException {
 		try {
 			Class<?> c = JavaLanguageAdapter.getClass(classString, options);
 			if (c != null) {
@@ -41,6 +42,7 @@ public interface LanguageAdapter {
 	Object createInstance(Class<?> baseClass, Options options) throws LanguageAdapterException;
 
 	public static class Options {
+
 		private MissingSuperclassBehavior missingSuperclassBehavior;
 
 		public MissingSuperclassBehavior getMissingSuperclassBehavior() {
@@ -48,6 +50,7 @@ public interface LanguageAdapter {
 		}
 
 		public static class Builder {
+
 			private final Options options;
 
 			private Builder() {

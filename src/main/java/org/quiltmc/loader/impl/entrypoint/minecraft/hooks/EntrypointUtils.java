@@ -16,13 +16,13 @@
 
 package org.quiltmc.loader.impl.entrypoint.minecraft.hooks;
 
-import org.quiltmc.loader.impl.QuiltLoaderImpl;
-import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
-
 import java.util.Collection;
 import java.util.function.Consumer;
+import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
+import org.quiltmc.loader.impl.QuiltLoaderImpl;
 
 public final class EntrypointUtils {
+
 	public static <T> void invoke(String name, Class<T> type, Consumer<? super T> invoker) {
 		QuiltLoaderImpl loader = QuiltLoaderImpl.INSTANCE;
 
@@ -45,7 +45,15 @@ public final class EntrypointUtils {
 				invoker.accept(container.getEntrypoint());
 			} catch (Throwable t) {
 				if (exception == null) {
-					exception = new RuntimeException("Could not execute entrypoint stage '" + name + "' due to errors, provided by '" + container.getProvider().getMetadata().getId() + "'!", t);
+					exception =
+						new RuntimeException(
+							"Could not execute entrypoint stage '" +
+							name +
+							"' due to errors, provided by '" +
+							container.getProvider().getMetadata().getId() +
+							"'!",
+							t
+						);
 				} else {
 					exception.addSuppressed(t);
 				}

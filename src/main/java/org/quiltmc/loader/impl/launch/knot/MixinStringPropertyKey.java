@@ -16,11 +16,11 @@
 
 package org.quiltmc.loader.impl.launch.knot;
 
+import java.util.Objects;
 import org.spongepowered.asm.service.IPropertyKey;
 
-import java.util.Objects;
-
 public class MixinStringPropertyKey implements IPropertyKey {
+
 	public final String key;
 
 	public MixinStringPropertyKey(String key) {

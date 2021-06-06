@@ -30,42 +30,41 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
-import org.jetbrains.annotations.ApiStatus;
-import org.quiltmc.loader.impl.discovery.RuntimeModRemapper;
-import org.quiltmc.loader.impl.metadata.DependencyOverrides;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import net.fabricmc.accesswidener.AccessWidener;
+import net.fabricmc.accesswidener.AccessWidenerReader;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.LanguageAdapter;
 import net.fabricmc.loader.api.MappingResolver;
 import net.fabricmc.loader.api.SemanticVersion;
+import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.ApiStatus;
+import org.objectweb.asm.Opcodes;
 import org.quiltmc.loader.impl.discovery.ClasspathModCandidateFinder;
 import org.quiltmc.loader.impl.discovery.DirectoryModCandidateFinder;
 import org.quiltmc.loader.impl.discovery.ModCandidate;
 import org.quiltmc.loader.impl.discovery.ModResolutionException;
 import org.quiltmc.loader.impl.discovery.ModResolver;
+import org.quiltmc.loader.impl.discovery.RuntimeModRemapper;
 import org.quiltmc.loader.impl.game.GameProvider;
 import org.quiltmc.loader.impl.gui.QuiltGuiEntry;
 import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
 import org.quiltmc.loader.impl.launch.common.QuiltLauncherBase;
 import org.quiltmc.loader.impl.launch.knot.Knot;
+import org.quiltmc.loader.impl.metadata.DependencyOverrides;
 import org.quiltmc.loader.impl.metadata.EntrypointMetadata;
 import org.quiltmc.loader.impl.metadata.LoaderModMetadata;
 import org.quiltmc.loader.impl.util.DefaultLanguageAdapter;
 import org.quiltmc.loader.impl.util.SystemProperties;
-import net.fabricmc.accesswidener.AccessWidener;
-import net.fabricmc.accesswidener.AccessWidenerReader;
-
-import org.objectweb.asm.Opcodes;
 
 /**
  * The main class for mod loading operations.
  */
 @ApiStatus.Internal
 public class QuiltLoaderImpl implements FabricLoader {
+
 	public static final QuiltLoaderImpl INSTANCE = new QuiltLoaderImpl();
 
 	public static final int ASM_VERSION = Opcodes.ASM9;
@@ -88,8 +87,7 @@ public class QuiltLoaderImpl implements FabricLoader {
 	private Path gameDir;
 	private Path configDir;
 
-	protected QuiltLoaderImpl() {
-	}
+	protected QuiltLoaderImpl() {}
 
 	/**
 	 * Freeze the FabricLoader, preventing additional mods from being loaded.
@@ -210,18 +208,31 @@ public class QuiltLoaderImpl implements FabricLoader {
 				break;
 		}
 
-		LOGGER.info("[" + getClass().getSimpleName() + "] " + modText, candidateMap.values().size(), candidateMap.values().stream()
-			.map(info -> String.format("%s@%s", info.getInfo().getId(), info.getInfo().getVersion().getFriendlyString()))
-			.collect(Collectors.joining(", ")));
+		LOGGER.info(
+			"[" + getClass().getSimpleName() + "] " + modText,
+			candidateMap.values().size(),
+			candidateMap
+				.values()
+				.stream()
+				.map(info -> String.format("%s@%s", info.getInfo().getId(), info.getInfo().getVersion().getFriendlyString()))
+				.collect(Collectors.joining(", "))
+		);
 
 		if (DependencyOverrides.INSTANCE.getDependencyOverrides().size() > 0) {
-			LOGGER.info(String.format("Dependencies overridden for \"%s\"", String.join(", ", DependencyOverrides.INSTANCE.getDependencyOverrides().keySet())));
+			LOGGER.info(
+				String.format(
+					"Dependencies overridden for \"%s\"",
+					String.join(", ", DependencyOverrides.INSTANCE.getDependencyOverrides().keySet())
+				)
+			);
 		}
 
 		boolean runtimeModRemapping = isDevelopmentEnvironment();
 
 		if (runtimeModRemapping && System.getProperty(SystemProperties.REMAP_CLASSPATH_FILE) == null) {
-			LOGGER.warn("Runtime mod remapping disabled due to no fabric.remapClasspathFile being specified. You may need to update loom.");
+			LOGGER.warn(
+				"Runtime mod remapping disabled due to no fabric.remapClasspathFile being specified. You may need to update loom."
+			);
 			runtimeModRemapping = false;
 		}
 
@@ -267,10 +278,11 @@ public class QuiltLoaderImpl implements FabricLoader {
 	@Override
 	public MappingResolver getMappingResolver() {
 		if (mappingResolver == null) {
-			mappingResolver = new QuiltMappingResolver(
-				QuiltLauncherBase.getLauncher().getMappingConfiguration()::getMappings,
-				QuiltLauncherBase.getLauncher().getTargetNamespace()
-			);
+			mappingResolver =
+				new QuiltMappingResolver(
+					QuiltLauncherBase.getLauncher().getMappingConfiguration()::getMappings,
+					QuiltLauncherBase.getLauncher().getTargetNamespace()
+				);
 		}
 
 		return mappingResolver;
@@ -320,7 +332,15 @@ public class QuiltLoaderImpl implements FabricLoader {
 		URL originUrl = candidate.getOriginUrl();
 
 		if (modMap.containsKey(info.getId())) {
-			throw new ModResolutionException("Duplicate mod ID: " + info.getId() + "! (" + modMap.get(info.getId()).getOriginUrl().getFile() + ", " + originUrl.getFile() + ")");
+			throw new ModResolutionException(
+				"Duplicate mod ID: " +
+				info.getId() +
+				"! (" +
+				modMap.get(info.getId()).getOriginUrl().getFile() +
+				", " +
+				originUrl.getFile() +
+				")"
+			);
 		}
 
 		if (!info.loadsInEnvironment(getEnvironmentType())) {
@@ -331,8 +351,16 @@ public class QuiltLoaderImpl implements FabricLoader {
 		mods.add(container);
 		modMap.put(info.getId(), container);
 		for (String provides : info.getProvides()) {
-			if(modMap.containsKey(provides)) {
-				throw new ModResolutionException("Duplicate provided alias: " + provides + "! (" + modMap.get(info.getId()).getOriginUrl().getFile() + ", " + originUrl.getFile() + ")");
+			if (modMap.containsKey(provides)) {
+				throw new ModResolutionException(
+					"Duplicate provided alias: " +
+					provides +
+					"! (" +
+					modMap.get(info.getId()).getOriginUrl().getFile() +
+					", " +
+					originUrl.getFile() +
+					")"
+				);
 			}
 			modMap.put(provides, container);
 		}
@@ -341,9 +369,21 @@ public class QuiltLoaderImpl implements FabricLoader {
 	protected void postprocessModMetadata() {
 		for (ModContainer mod : mods) {
 			if (!(mod.getInfo().getVersion() instanceof SemanticVersion)) {
-				LOGGER.warn("Mod `" + mod.getInfo().getId() + "` (" + mod.getInfo().getVersion().getFriendlyString() + ") does not respect SemVer - comparison support is limited.");
+				LOGGER.warn(
+					"Mod `" +
+					mod.getInfo().getId() +
+					"` (" +
+					mod.getInfo().getVersion().getFriendlyString() +
+					") does not respect SemVer - comparison support is limited."
+				);
 			} else if (((SemanticVersion) mod.getInfo().getVersion()).getVersionComponentCount() >= 4) {
-				LOGGER.warn("Mod `" + mod.getInfo().getId() + "` (" + mod.getInfo().getVersion().getFriendlyString() + ") uses more dot-separated version components than SemVer allows; support for this is currently not guaranteed.");
+				LOGGER.warn(
+					"Mod `" +
+					mod.getInfo().getId() +
+					"` (" +
+					mod.getInfo().getVersion().getFriendlyString() +
+					") uses more dot-separated version components than SemVer allows; support for this is currently not guaranteed."
+				);
 			}
 		}
 	}
@@ -387,11 +427,25 @@ public class QuiltLoaderImpl implements FabricLoader {
 			// add language adapters
 			for (Map.Entry<String, String> laEntry : mod.getInfo().getLanguageAdapterDefinitions().entrySet()) {
 				if (adapterMap.containsKey(laEntry.getKey())) {
-					throw new RuntimeException("Duplicate language adapter key: " + laEntry.getKey() + "! (" + laEntry.getValue() + ", " + adapterMap.get(laEntry.getKey()).getClass().getName() + ")");
+					throw new RuntimeException(
+						"Duplicate language adapter key: " +
+						laEntry.getKey() +
+						"! (" +
+						laEntry.getValue() +
+						", " +
+						adapterMap.get(laEntry.getKey()).getClass().getName() +
+						")"
+					);
 				}
 
 				try {
-					adapterMap.put(laEntry.getKey(), (LanguageAdapter) Class.forName(laEntry.getValue(), true, QuiltLauncherBase.getLauncher().getTargetClassLoader()).getDeclaredConstructor().newInstance());
+					adapterMap.put(
+						laEntry.getKey(),
+						(LanguageAdapter) Class
+							.forName(laEntry.getValue(), true, QuiltLauncherBase.getLauncher().getTargetClassLoader())
+							.getDeclaredConstructor()
+							.newInstance()
+					);
 				} catch (Exception e) {
 					throw new RuntimeException("Failed to instantiate language adapter: " + laEntry.getKey(), e);
 				}
@@ -413,7 +467,10 @@ public class QuiltLoaderImpl implements FabricLoader {
 					}
 				}
 			} catch (Exception e) {
-				throw new RuntimeException(String.format("Failed to setup mod %s (%s)", mod.getInfo().getName(), mod.getOriginUrl().getFile()), e);
+				throw new RuntimeException(
+					String.format("Failed to setup mod %s (%s)", mod.getInfo().getName(), mod.getOriginUrl().getFile()),
+					e
+				);
 			}
 		}
 	}
@@ -463,10 +520,17 @@ public class QuiltLoaderImpl implements FabricLoader {
 				if (containsKnot) {
 					getLogger().info("Environment: Target class loader is parent of game class loader.");
 				} else {
-					getLogger().warn("\n\n* CLASS LOADER MISMATCH! THIS IS VERY BAD AND WILL PROBABLY CAUSE WEIRD ISSUES! *\n"
-						+ " - Expected game class loader: " + QuiltLauncherBase.getLauncher().getTargetClassLoader() + "\n"
-						+ " - Actual game class loader: " + gameClassLoader + "\n"
-						+ "Could not find the expected class loader in game class loader parents!\n");
+					getLogger()
+						.warn(
+							"\n\n* CLASS LOADER MISMATCH! THIS IS VERY BAD AND WILL PROBABLY CAUSE WEIRD ISSUES! *\n" +
+							" - Expected game class loader: " +
+							QuiltLauncherBase.getLauncher().getTargetClassLoader() +
+							"\n" +
+							" - Actual game class loader: " +
+							gameClassLoader +
+							"\n" +
+							"Could not find the expected class loader in game class loader parents!\n"
+						);
 				}
 			}
 		}
@@ -476,7 +540,14 @@ public class QuiltLoaderImpl implements FabricLoader {
 		if (gameDir != null) {
 			try {
 				if (!gameDir.toRealPath().equals(newRunDir.toRealPath())) {
-					getLogger().warn("Inconsistent game execution directories: engine says " + newRunDir.toRealPath() + ", while initializer says " + gameDir.toRealPath() + "...");
+					getLogger()
+						.warn(
+							"Inconsistent game execution directories: engine says " +
+							newRunDir.toRealPath() +
+							", while initializer says " +
+							gameDir.toRealPath() +
+							"..."
+						);
 					setGameDir(newRunDir);
 				}
 			} catch (IOException e) {

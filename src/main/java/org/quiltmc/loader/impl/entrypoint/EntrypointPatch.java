@@ -16,18 +16,18 @@
 
 package org.quiltmc.loader.impl.entrypoint;
 
-import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.*;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.*;
+import org.quiltmc.loader.impl.launch.common.QuiltLauncher;
 
 public abstract class EntrypointPatch {
+
 	private final EntrypointTransformer transformer;
 
 	public EntrypointPatch(EntrypointTransformer transformer) {
@@ -133,7 +133,7 @@ public abstract class EntrypointPatch {
 
 	protected boolean isPublicInstance(int access) {
 		//noinspection PointlessBitwiseExpression
-		return ((access & 0x0F) == (Opcodes.ACC_PUBLIC | 0 /* non-static */));
+		return ((access & 0x0F) == (Opcodes.ACC_PUBLIC | 0/* non-static */));
 	}
 
 	public abstract void process(QuiltLauncher launcher, Consumer<ClassNode> classEmitter);

@@ -19,10 +19,10 @@ package org.quiltmc.loader.impl.util.version;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
 import net.fabricmc.loader.api.VersionParsingException;
 
 public final class SemanticVersionPredicateParser {
+
 	private static final Map<String, Function<SemanticVersionImpl, Predicate<SemanticVersionImpl>>> PREFIXES;
 
 	public static Predicate<SemanticVersionImpl> create(String text) throws VersionParsingException {
@@ -59,10 +59,10 @@ public final class SemanticVersionPredicateParser {
 		}
 
 		if (predicateList.isEmpty()) {
-			return (s) -> true;
+			return s -> true;
 		}
 
-		return (s) -> {
+		return s -> {
 			for (Predicate<SemanticVersionImpl> p : predicateList) {
 				if (!p.test(s)) {
 					return false;
@@ -76,15 +76,23 @@ public final class SemanticVersionPredicateParser {
 	static {
 		// Make sure to keep this sorted in order of length!
 		PREFIXES = new LinkedHashMap<>();
-		PREFIXES.put(">=", (target) -> (source) -> source.compareTo(target) >= 0);
-		PREFIXES.put("<=", (target) -> (source) -> source.compareTo(target) <= 0);
-		PREFIXES.put(">", (target) -> (source) -> source.compareTo(target) > 0);
-		PREFIXES.put("<", (target) -> (source) -> source.compareTo(target) < 0);
-		PREFIXES.put("=", (target) -> (source) -> source.compareTo(target) == 0);
-		PREFIXES.put("~", (target) -> (source) -> source.compareTo(target) >= 0
-				&& source.getVersionComponent(0) == target.getVersionComponent(0)
-				&& source.getVersionComponent(1) == target.getVersionComponent(1));
-		PREFIXES.put("^", (target) -> (source) -> source.compareTo(target) >= 0
-				&& source.getVersionComponent(0) == target.getVersionComponent(0));
+		PREFIXES.put(">=", target -> source -> source.compareTo(target) >= 0);
+		PREFIXES.put("<=", target -> source -> source.compareTo(target) <= 0);
+		PREFIXES.put(">", target -> source -> source.compareTo(target) > 0);
+		PREFIXES.put("<", target -> source -> source.compareTo(target) < 0);
+		PREFIXES.put("=", target -> source -> source.compareTo(target) == 0);
+		PREFIXES.put(
+			"~",
+			target ->
+				source ->
+					source.compareTo(target) >= 0 &&
+					source.getVersionComponent(0) == target.getVersionComponent(0) &&
+					source.getVersionComponent(1) == target.getVersionComponent(1)
+		);
+		PREFIXES.put(
+			"^",
+			target ->
+				source -> source.compareTo(target) >= 0 && source.getVersionComponent(0) == target.getVersionComponent(0)
+		);
 	}
 }
